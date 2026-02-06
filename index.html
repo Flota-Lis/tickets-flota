@@ -7,26 +7,28 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 min-h-screen p-6">
+<body class="bg-gray-100 min-h-screen p-3 md:p-6">
 
-<div class="max-w-6xl mx-auto bg-white p-6 rounded shadow">
+<div class="max-w-7xl mx-auto bg-white p-4 md:p-6 rounded shadow">
 
   <!-- HEADER -->
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold">Sistema de Tickets</h1>
-    <div class="flex gap-2">
-      <button onclick="mostrarVista('conductor')" class="bg-blue-600 text-white px-4 py-2 rounded">
+  <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-6">
+    <h1 class="text-xl md:text-2xl font-bold text-center md:text-left">
+      Sistema de Tickets
+    </h1>
+    <div class="flex gap-2 justify-center">
+      <button onclick="mostrarVista('conductor')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">
         Conductor
       </button>
-      <button onclick="mostrarVista('admin')" class="bg-gray-800 text-white px-4 py-2 rounded">
+      <button onclick="mostrarVista('admin')" class="bg-gray-800 text-white px-4 py-2 rounded text-sm">
         Admin
       </button>
     </div>
   </div>
 
-  <!-- VISTA CONDUCTOR -->
+  <!-- ================= CONDUCTOR ================= -->
   <div id="vistaConductor">
-    <h2 class="text-xl font-semibold mb-4">Reportar Novedad</h2>
+    <h2 class="text-lg font-semibold mb-4">Reportar Novedad</h2>
 
     <input id="placa" placeholder="Placa" class="border p-2 rounded w-full mb-3 uppercase">
     <input id="nombre" placeholder="Nombre del conductor" class="border p-2 rounded w-full mb-3">
@@ -36,12 +38,12 @@
       Enviar Ticket
     </button>
 
-    <p id="msgExito" class="hidden text-green-600 mt-3 font-semibold">
+    <p id="msgExito" class="hidden text-green-600 mt-3 font-semibold text-center">
       Ticket enviado correctamente
     </p>
   </div>
 
-  <!-- VISTA ADMIN -->
+  <!-- ================= ADMIN ================= -->
   <div id="vistaAdmin" class="hidden">
 
     <!-- LOGIN -->
@@ -56,36 +58,43 @@
     <!-- PANEL -->
     <div id="panelAdmin" class="hidden">
 
-      <div class="flex justify-between mb-4">
+      <div class="flex flex-col md:flex-row md:justify-between gap-3 mb-4">
         <div class="flex gap-2">
-          <button onclick="cargarTickets()" class="bg-green-600 text-white px-4 py-2 rounded">
+          <button onclick="cargarTickets()" class="bg-green-600 text-white px-3 py-2 rounded text-sm">
             Actualizar
           </button>
-          <button onclick="exportarExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded">
+          <button onclick="exportarExcel()" class="bg-emerald-600 text-white px-3 py-2 rounded text-sm">
             Exportar Excel
           </button>
         </div>
-        <button onclick="logoutAdmin()" class="bg-red-600 text-white px-4 py-2 rounded">
+        <button onclick="logoutAdmin()" class="bg-red-600 text-white px-3 py-2 rounded text-sm">
           Cerrar sesión
         </button>
       </div>
 
-      <table class="w-full text-sm border">
-        <thead class="bg-gray-200">
-          <tr>
-            <th class="border p-2">Fecha creación</th>
-            <th class="border p-2">Fecha cierre</th>
-            <th class="border p-2">Tiempo</th>
-            <th class="border p-2">Placa</th>
-            <th class="border p-2">Nombre</th>
-            <th class="border p-2">Novedad</th>
-            <th class="border p-2">Observaciones</th>
-            <th class="border p-2">Estado</th>
-            <th class="border p-2">Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="tablaTickets"></tbody>
-      </table>
+      <!-- ===== TABLA (PC) ===== -->
+      <div class="hidden md:block overflow-x-auto">
+        <table class="w-full text-sm border">
+          <thead class="bg-gray-200">
+            <tr>
+              <th class="border p-2">Creación</th>
+              <th class="border p-2">Cierre</th>
+              <th class="border p-2">Tiempo</th>
+              <th class="border p-2">Placa</th>
+              <th class="border p-2">Nombre</th>
+              <th class="border p-2">Novedad</th>
+              <th class="border p-2">Observaciones</th>
+              <th class="border p-2">Estado</th>
+              <th class="border p-2">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaTickets"></tbody>
+        </table>
+      </div>
+
+      <!-- ===== CARDS (MÓVIL) ===== -->
+      <div id="cardsTickets" class="block md:hidden space-y-3"></div>
+
     </div>
   </div>
 </div>
@@ -98,7 +107,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getFirestore, collection, addDoc, getDocs,
-  updateDoc, deleteDoc, doc
+  updateDoc, deleteDoc, doc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import {
   getAuth, signInWithEmailAndPassword,
@@ -119,42 +128,19 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const ref = collection(db, "tickets");
 
-/* ===== DOM ===== */
-const placaInput = document.getElementById("placa");
-const nombreInput = document.getElementById("nombre");
-const novedadInput = document.getElementById("novedad");
-const msgExito = document.getElementById("msgExito");
-const tablaTickets = document.getElementById("tablaTickets");
+/* ===== UTIL ===== */
+const fmt = f => f ? f.toDate().toLocaleString("es-CO") : "-";
 
-const emailAdmin = document.getElementById("emailAdmin");
-const passAdmin = document.getElementById("passAdmin");
-const panelAdmin = document.getElementById("panelAdmin");
-const loginAdminDiv = document.getElementById("loginAdmin");
-
-/* ===== FECHAS SEGURAS (MÓVIL OK) ===== */
-function formatearFecha(fechaISO) {
-  if (!fechaISO) return "-";
-  const d = new Date(fechaISO);
-  if (isNaN(d)) return "-";
-  return d.toLocaleString("es-CO");
-}
-
-function calcularTiempo(inicio, fin) {
-  if (!inicio || !fin) return "-";
-  const i = new Date(inicio);
-  const f = new Date(fin);
-  if (isNaN(i) || isNaN(f)) return "-";
-
-  const diff = f - i;
-  const h = Math.floor(diff / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  return `${h}h ${m}m`;
+function tiempo(i, f) {
+  if (!i || !f) return "-";
+  const d = f.toDate() - i.toDate();
+  return `${Math.floor(d/3600000)}h ${Math.floor(d%3600000/60000)}m`;
 }
 
 /* ===== VISTAS ===== */
 window.mostrarVista = v => {
-  document.getElementById("vistaConductor").classList.add("hidden");
-  document.getElementById("vistaAdmin").classList.add("hidden");
+  vistaConductor.classList.add("hidden");
+  vistaAdmin.classList.add("hidden");
   document.getElementById(v === "conductor" ? "vistaConductor" : "vistaAdmin")
     .classList.remove("hidden");
 };
@@ -168,65 +154,52 @@ window.loginAdmin = async () => {
   }
 };
 
-window.logoutAdmin = async () => {
-  await signOut(auth);
-};
+window.logoutAdmin = async () => signOut(auth);
 
-onAuthStateChanged(auth, user => {
-  if (user) {
-    loginAdminDiv.classList.add("hidden");
-    panelAdmin.classList.remove("hidden");
-    mostrarVista("admin");
-    cargarTickets();
-  } else {
-    panelAdmin.classList.add("hidden");
-    loginAdminDiv.classList.remove("hidden");
-    mostrarVista("conductor");
-  }
+onAuthStateChanged(auth, u => {
+  loginAdmin.classList.toggle("hidden", !!u);
+  panelAdmin.classList.toggle("hidden", !u);
+  mostrarVista(u ? "admin" : "conductor");
+  if (u) cargarTickets();
 });
 
 /* ===== TICKETS ===== */
 window.crearTicket = async () => {
-  if (!placaInput.value || !nombreInput.value || !novedadInput.value) {
-    alert("Completa todos los campos");
-    return;
-  }
-
   await addDoc(ref, {
-    fechaCreacion: new Date().toISOString(),
-    placa: placaInput.value.toUpperCase(),
-    nombre: nombreInput.value,
-    novedad: novedadInput.value,
+    placa: placa.value.toUpperCase(),
+    nombre: nombre.value,
+    novedad: novedad.value,
     estado: "abierto",
     observaciones: "",
+    fechaCreacion: serverTimestamp(),
     fechaCierre: null
   });
-
-  placaInput.value = nombreInput.value = novedadInput.value = "";
+  placa.value = nombre.value = novedad.value = "";
   msgExito.classList.remove("hidden");
-  setTimeout(() => msgExito.classList.add("hidden"), 3000);
+  setTimeout(()=>msgExito.classList.add("hidden"),3000);
 };
 
 window.cargarTickets = async () => {
   tablaTickets.innerHTML = "";
+  cardsTickets.innerHTML = "";
   const snap = await getDocs(ref);
 
   snap.forEach(d => {
     const t = d.data();
+
     tablaTickets.innerHTML += `
       <tr>
-        <td class="border p-2">${formatearFecha(t.fechaCreacion)}</td>
-        <td class="border p-2">${formatearFecha(t.fechaCierre)}</td>
-        <td class="border p-2">${calcularTiempo(t.fechaCreacion, t.fechaCierre)}</td>
+        <td class="border p-2">${fmt(t.fechaCreacion)}</td>
+        <td class="border p-2">${fmt(t.fechaCierre)}</td>
+        <td class="border p-2">${tiempo(t.fechaCreacion,t.fechaCierre)}</td>
         <td class="border p-2">${t.placa}</td>
         <td class="border p-2">${t.nombre}</td>
         <td class="border p-2">${t.novedad}</td>
         <td class="border p-2">
-          <input class="border p-1 w-full"
-            value="${t.observaciones || ""}"
-            onchange="guardarObs('${d.id}', this.value)">
+          <input class="border p-1 w-full" value="${t.observaciones||""}"
+          onchange="guardarObs('${d.id}',this.value)">
         </td>
-        <td class="border p-2 font-bold ${t.estado === 'abierto' ? 'text-red-600' : 'text-green-600'}">
+        <td class="border p-2 font-bold ${t.estado==="abierto"?"text-red-600":"text-green-600"}">
           ${t.estado.toUpperCase()}
         </td>
         <td class="border p-2">
@@ -234,53 +207,22 @@ window.cargarTickets = async () => {
           <button onclick="eliminarTicket('${d.id}')" class="text-red-600">🗑</button>
         </td>
       </tr>`;
+
+    cardsTickets.innerHTML += `
+      <div class="border rounded p-3 bg-gray-50">
+        <div class="font-bold">${t.placa} – ${t.estado.toUpperCase()}</div>
+        <div class="text-sm">${t.novedad}</div>
+        <div class="text-xs text-gray-600 mt-1">
+          Creado: ${fmt(t.fechaCreacion)}<br>
+          Tiempo: ${tiempo(t.fechaCreacion,t.fechaCierre)}
+        </div>
+      </div>`;
   });
 };
 
-window.guardarObs = async (id, obs) => {
-  await updateDoc(doc(db, "tickets", id), { observaciones: obs });
-};
-
-window.cerrarTicket = async (id) => {
-  await updateDoc(doc(db, "tickets", id), {
-    estado: "cerrado",
-    fechaCierre: new Date().toISOString()
-  });
-  cargarTickets();
-};
-
-window.eliminarTicket = async (id) => {
-  if (confirm("¿Eliminar ticket?")) {
-    await deleteDoc(doc(db, "tickets", id));
-    cargarTickets();
-  }
-};
-
-window.exportarExcel = async () => {
-  const snap = await getDocs(ref);
-  const data = [
-    ["Fecha creación","Fecha cierre","Tiempo","Placa","Nombre","Novedad","Observaciones","Estado"]
-  ];
-
-  snap.forEach(d => {
-    const t = d.data();
-    data.push([
-      formatearFecha(t.fechaCreacion),
-      formatearFecha(t.fechaCierre),
-      calcularTiempo(t.fechaCreacion, t.fechaCierre),
-      t.placa,
-      t.nombre,
-      t.novedad,
-      t.observaciones || "",
-      t.estado
-    ]);
-  });
-
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Tickets");
-  XLSX.writeFile(wb, "tickets.xlsx");
-};
+window.guardarObs = (id,o)=>updateDoc(doc(db,"tickets",id),{observaciones:o});
+window.cerrarTicket = id=>updateDoc(doc(db,"tickets",id),{estado:"cerrado",fechaCierre:serverTimestamp()}).then(cargarTickets);
+window.eliminarTicket = id=>confirm("¿Eliminar?")&&deleteDoc(doc(db,"tickets",id)).then(cargarTickets);
 </script>
 
 </body>
