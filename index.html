@@ -131,11 +131,20 @@ const passAdmin = document.getElementById("passAdmin");
 const panelAdmin = document.getElementById("panelAdmin");
 const loginAdminDiv = document.getElementById("loginAdmin");
 
-/* ===== UTIL ===== */
+/* ===== FECHAS SEGURAS (MÓVIL OK) ===== */
+function formatearFecha(fechaISO) {
+  if (!fechaISO) return "-";
+  const d = new Date(fechaISO);
+  if (isNaN(d)) return "-";
+  return d.toLocaleString("es-CO");
+}
+
 function calcularTiempo(inicio, fin) {
-  if (!fin) return "-";
+  if (!inicio || !fin) return "-";
   const i = new Date(inicio);
   const f = new Date(fin);
+  if (isNaN(i) || isNaN(f)) return "-";
+
   const diff = f - i;
   const h = Math.floor(diff / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
@@ -167,10 +176,12 @@ onAuthStateChanged(auth, user => {
   if (user) {
     loginAdminDiv.classList.add("hidden");
     panelAdmin.classList.remove("hidden");
+    mostrarVista("admin");
     cargarTickets();
   } else {
     panelAdmin.classList.add("hidden");
     loginAdminDiv.classList.remove("hidden");
+    mostrarVista("conductor");
   }
 });
 
@@ -188,7 +199,7 @@ window.crearTicket = async () => {
     novedad: novedadInput.value,
     estado: "abierto",
     observaciones: "",
-    fechaCierre: ""
+    fechaCierre: null
   });
 
   placaInput.value = nombreInput.value = novedadInput.value = "";
@@ -204,8 +215,8 @@ window.cargarTickets = async () => {
     const t = d.data();
     tablaTickets.innerHTML += `
       <tr>
-        <td class="border p-2">${new Date(t.fechaCreacion).toLocaleString()}</td>
-        <td class="border p-2">${t.fechaCierre ? new Date(t.fechaCierre).toLocaleString() : "-"}</td>
+        <td class="border p-2">${formatearFecha(t.fechaCreacion)}</td>
+        <td class="border p-2">${formatearFecha(t.fechaCierre)}</td>
         <td class="border p-2">${calcularTiempo(t.fechaCreacion, t.fechaCierre)}</td>
         <td class="border p-2">${t.placa}</td>
         <td class="border p-2">${t.nombre}</td>
@@ -254,8 +265,8 @@ window.exportarExcel = async () => {
   snap.forEach(d => {
     const t = d.data();
     data.push([
-      new Date(t.fechaCreacion).toLocaleString(),
-      t.fechaCierre ? new Date(t.fechaCierre).toLocaleString() : "",
+      formatearFecha(t.fechaCreacion),
+      formatearFecha(t.fechaCierre),
       calcularTiempo(t.fechaCreacion, t.fechaCierre),
       t.placa,
       t.nombre,
