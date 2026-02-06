@@ -1,392 +1,266 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Tickets - Conductores</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Sistema de Tickets</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
-    <div id="app" class="container mx-auto px-4 py-8 max-w-6xl">
-        <!-- Header -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <div class="flex justify-between items-center">
-                <h1 class="text-3xl font-bold text-indigo-900">Sistema de Tickets</h1>
-                <div class="flex gap-2">
-                    <button onclick="mostrarVista('conductor')" 
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                        👨‍✈️ Conductor
-                    </button>
-                    <button onclick="mostrarVista('admin')" 
-                            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                        🔐 Admin
-                    </button>
-                </div>
-            </div>
-        </div>
 
-        <!-- Vista Conductor -->
-        <div id="vistaConductor" class="hidden">
-            <div class="bg-white rounded-lg shadow-lg p-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">📝 Reportar Novedad</h2>
-                
-                <form id="formTicket" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Placa del Vehículo *</label>
-                        <input type="text" id="placa" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent uppercase"
-                               placeholder="ABC123">
-                    </div>
+<body class="bg-gray-100 min-h-screen p-6">
 
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nombre del Conductor *</label>
-                        <input type="text" id="nombre" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                               placeholder="Nombre completo">
-                    </div>
+<div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
 
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Novedad / Problema *</label>
-                        <textarea id="novedad" required rows="4"
-                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                  placeholder="Describe la novedad o problema..."></textarea>
-                    </div>
+  <!-- HEADER -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Sistema de Tickets</h1>
+    <div class="flex gap-2">
+      <button onclick="mostrarVista('conductor')"
+        class="bg-blue-600 text-white px-4 py-2 rounded">
+        Conductor
+      </button>
+      <button onclick="mostrarVista('admin')"
+        class="bg-gray-800 text-white px-4 py-2 rounded">
+        Admin
+      </button>
+    </div>
+  </div>
 
-                    <button type="submit" 
-                            class="w-full bg-indigo-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-indigo-700 transition shadow-lg">
-                        ✉️ Enviar Ticket
-                    </button>
-                </form>
+  <!-- VISTA CONDUCTOR -->
+  <div id="vistaConductor">
+    <h2 class="text-xl font-semibold mb-4">Reportar Novedad</h2>
 
-                <div id="mensajeExito" class="hidden mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-                    ✅ Ticket enviado exitosamente. El administrador será notificado.
-                </div>
-            </div>
-        </div>
+    <input id="placa" placeholder="Placa"
+      class="border p-2 rounded w-full mb-3 uppercase">
 
-        <!-- Vista Admin -->
-        <div id="vistaAdmin" class="hidden">
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">🎫 Panel de Administración</h2>
-                    <div class="flex gap-2">
-                        <button onclick="exportarExcel()" 
-                                class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">
-                            📊 Exportar Excel
-                        </button>
-                        <button onclick="borrarTodos()" 
-                                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-                            🗑️ Borrar Todo
-                        </button>
-                    </div>
-                </div>
+    <input id="nombre" placeholder="Nombre del conductor"
+      class="border p-2 rounded w-full mb-3">
 
-                <!-- Notificaciones -->
-                <div id="notificaciones" class="mb-4"></div>
+    <textarea id="novedad" placeholder="Describe la novedad"
+      class="border p-2 rounded w-full mb-3"></textarea>
 
-                <!-- Filtros -->
-                <div class="mb-4 flex gap-2">
-                    <button onclick="filtrarTickets('todos')" 
-                            class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition filter-btn">
-                        Todos (<span id="countTodos">0</span>)
-                    </button>
-                    <button onclick="filtrarTickets('abierto')" 
-                            class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition filter-btn">
-                        Abiertos (<span id="countAbiertos">0</span>)
-                    </button>
-                    <button onclick="filtrarTickets('cerrado')" 
-                            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition filter-btn">
-                        Cerrados (<span id="countCerrados">0</span>)
-                    </button>
-                </div>
+    <button onclick="crearTicket()"
+      class="bg-blue-600 text-white px-4 py-2 rounded w-full">
+      Enviar Ticket
+    </button>
 
-                <!-- Lista de Tickets -->
-                <div id="listaTickets" class="space-y-3 max-h-[600px] overflow-y-auto">
-                    <!-- Los tickets se cargarán aquí -->
-                </div>
+    <p id="msgExito" class="hidden text-green-600 mt-3 font-semibold">
+      Ticket enviado correctamente
+    </p>
+  </div>
 
-                <div id="sinTickets" class="hidden text-center py-12 text-gray-500">
-                    <div class="text-6xl mb-4">📋</div>
-                    <p class="text-xl">No hay tickets registrados</p>
-                </div>
-            </div>
-        </div>
+  <!-- VISTA ADMIN -->
+  <div id="vistaAdmin" class="hidden">
+
+    <!-- LOGIN ADMIN -->
+    <div id="loginAdmin" class="mb-4">
+      <input id="emailAdmin" type="email" placeholder="Correo admin"
+        class="border p-2 rounded w-full mb-2">
+      <input id="passAdmin" type="password" placeholder="Contraseña"
+        class="border p-2 rounded w-full mb-2">
+
+      <button onclick="loginAdmin()"
+        class="bg-gray-800 text-white px-4 py-2 rounded w-full">
+        Ingresar
+      </button>
     </div>
 
-    <script>
-        // Estado de la aplicación
-        let tickets = [];
-        let filtroActual = 'todos';
-        let notificacionesPendientes = 0;
+    <!-- PANEL ADMIN -->
+    <div id="panelAdmin" class="hidden">
 
-        // Cargar datos al iniciar
-        async function cargarDatos() {
-            try {
-                const result = await window.storage.get('tickets');
-                if (result && result.value) {
-                    tickets = JSON.parse(result.value);
-                    actualizarContadores();
-                    renderizarTickets();
-                }
-            } catch (error) {
-                console.log('No hay tickets previos');
-            }
+      <div class="flex justify-between mb-4">
+        <div class="flex gap-2">
+          <button onclick="cargarTickets()"
+            class="bg-green-600 text-white px-4 py-2 rounded">
+            Actualizar
+          </button>
+          <button onclick="exportarExcel()"
+            class="bg-emerald-600 text-white px-4 py-2 rounded">
+            Exportar Excel
+          </button>
+        </div>
+        <button onclick="logoutAdmin()"
+          class="bg-red-600 text-white px-4 py-2 rounded">
+          Cerrar sesión
+        </button>
+      </div>
 
-            // Cargar notificaciones pendientes
-            try {
-                const notifResult = await window.storage.get('notificaciones_pendientes');
-                if (notifResult && notifResult.value) {
-                    notificacionesPendientes = parseInt(notifResult.value);
-                }
-            } catch (error) {
-                console.log('No hay notificaciones previas');
-            }
-        }
+      <table class="w-full text-sm border">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border p-2">Fecha</th>
+            <th class="border p-2">Placa</th>
+            <th class="border p-2">Nombre</th>
+            <th class="border p-2">Novedad</th>
+            <th class="border p-2">Estado</th>
+            <th class="border p-2">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaTickets"></tbody>
+      </table>
+    </div>
+  </div>
 
-        // Guardar datos
-        async function guardarDatos() {
-            await window.storage.set('tickets', JSON.stringify(tickets));
-            actualizarContadores();
-        }
+</div>
 
-        // Inicializar aplicación
-        window.addEventListener('load', async () => {
-            await cargarDatos();
-            mostrarVista('conductor');
-        });
+<!-- FIREBASE + JS -->
+ <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-        // Mostrar vista
-        function mostrarVista(vista) {
-            document.getElementById('vistaConductor').classList.add('hidden');
-            document.getElementById('vistaAdmin').classList.add('hidden');
-            
-            if (vista === 'conductor') {
-                document.getElementById('vistaConductor').classList.remove('hidden');
-            } else {
-                document.getElementById('vistaAdmin').classList.remove('hidden');
-                renderizarTickets();
-                mostrarNotificaciones();
-            }
-        }
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, getDocs,
+    updateDoc, deleteDoc, doc
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import {
+    getAuth, signInWithEmailAndPassword,
+    onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // Formulario de ticket
-        document.getElementById('formTicket').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const ticket = {
-                id: Date.now(),
-                fecha: new Date().toLocaleString('es-CO', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                }),
-                placa: document.getElementById('placa').value.toUpperCase(),
-                nombre: document.getElementById('nombre').value,
-                novedad: document.getElementById('novedad').value,
-                estado: 'abierto'
-            };
+  const firebaseConfig = {
+    apiKey: "AIzaSyDXqaQBxsxpBEfyrOGFGG9EwcDUhH8Xec0",
+    authDomain: "tickets-1a224.firebaseapp.com",
+    projectId: "tickets-1a224",
+    storageBucket: "tickets-1a224.appspot.com",
+    messagingSenderId: "804645677287",
+    appId: "1:804645677287:web:41e11afd785704fe11da42"
+  };
 
-            tickets.unshift(ticket);
-            await guardarDatos();
-            
-            // Incrementar notificaciones
-            notificacionesPendientes++;
-            await window.storage.set('notificaciones_pendientes', notificacionesPendientes.toString());
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const ref = collection(db, "tickets");
 
-            // Limpiar formulario
-            document.getElementById('formTicket').reset();
-            
-            // Mostrar mensaje de éxito
-            const mensaje = document.getElementById('mensajeExito');
-            mensaje.classList.remove('hidden');
-            setTimeout(() => {
-                mensaje.classList.add('hidden');
-            }, 5000);
-        });
+  /* ===== DOM ===== */
+  const placaInput = document.getElementById("placa");
+  const nombreInput = document.getElementById("nombre");
+  const novedadInput = document.getElementById("novedad");
+  const msgExito = document.getElementById("msgExito");
+  const tablaTickets = document.getElementById("tablaTickets");
 
-        // Mostrar notificaciones
-        function mostrarNotificaciones() {
-            const notifDiv = document.getElementById('notificaciones');
-            
-            if (notificacionesPendientes > 0) {
-                notifDiv.innerHTML = `
-                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 flex justify-between items-center">
-                        <div>
-                            <p class="font-bold">🔔 ${notificacionesPendientes} nuevo${notificacionesPendientes > 1 ? 's' : ''} ticket${notificacionesPendientes > 1 ? 's' : ''} sin revisar</p>
-                        </div>
-                        <button onclick="limpiarNotificaciones()" 
-                                class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700">
-                            Marcar como visto
-                        </button>
-                    </div>
-                `;
-            } else {
-                notifDiv.innerHTML = '';
-            }
-        }
+  const emailAdmin = document.getElementById("emailAdmin");
+  const passAdmin = document.getElementById("passAdmin");
+  const panelAdmin = document.getElementById("panelAdmin");
+  const loginAdminDiv = document.getElementById("loginAdmin");
 
-        // Limpiar notificaciones
-        async function limpiarNotificaciones() {
-            notificacionesPendientes = 0;
-            await window.storage.set('notificaciones_pendientes', '0');
-            mostrarNotificaciones();
-        }
+  /* ===== VISTAS ===== */
+  window.mostrarVista = (v) => {
+    document.getElementById("vistaConductor").classList.add("hidden");
+    document.getElementById("vistaAdmin").classList.add("hidden");
+    document
+      .getElementById(v === "conductor" ? "vistaConductor" : "vistaAdmin")
+      .classList.remove("hidden");
+  };
 
-        // Actualizar contadores
-        function actualizarContadores() {
-            const abiertos = tickets.filter(t => t.estado === 'abierto').length;
-            const cerrados = tickets.filter(t => t.estado === 'cerrado').length;
-            
-            document.getElementById('countTodos').textContent = tickets.length;
-            document.getElementById('countAbiertos').textContent = abiertos;
-            document.getElementById('countCerrados').textContent = cerrados;
-        }
+  /* ===== AUTH ===== */
+  window.loginAdmin = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, emailAdmin.value, passAdmin.value);
+    } catch {
+      alert("Correo o contraseña incorrectos");
+    }
+  };
 
-        // Filtrar tickets
-        function filtrarTickets(filtro) {
-            filtroActual = filtro;
-            renderizarTickets();
-        }
+  window.logoutAdmin = async () => {
+    await signOut(auth);
+  };
 
-        // Renderizar tickets
-        function renderizarTickets() {
-            const lista = document.getElementById('listaTickets');
-            const sinTickets = document.getElementById('sinTickets');
-            
-            let ticketsFiltrados = tickets;
-            if (filtroActual !== 'todos') {
-                ticketsFiltrados = tickets.filter(t => t.estado === filtroActual);
-            }
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      loginAdminDiv.classList.add("hidden");
+      panelAdmin.classList.remove("hidden");
+      cargarTickets();
+    } else {
+      panelAdmin.classList.add("hidden");
+      loginAdminDiv.classList.remove("hidden");
+    }
+  });
 
-            if (ticketsFiltrados.length === 0) {
-                lista.innerHTML = '';
-                sinTickets.classList.remove('hidden');
-                return;
-            }
+  /* ===== TICKETS ===== */
+  window.crearTicket = async () => {
+    if (!placaInput.value || !nombreInput.value || !novedadInput.value) {
+      alert("Completa todos los campos");
+      return;
+    }
 
-            sinTickets.classList.add('hidden');
-            
-            lista.innerHTML = ticketsFiltrados.map(ticket => `
-                <div class="border rounded-lg p-4 ${ticket.estado === 'abierto' ? 'bg-yellow-50 border-yellow-300' : 'bg-green-50 border-green-300'}">
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="px-3 py-1 rounded-full text-xs font-bold ${
-                                    ticket.estado === 'abierto' 
-                                    ? 'bg-yellow-200 text-yellow-800' 
-                                    : 'bg-green-200 text-green-800'
-                                }">
-                                    ${ticket.estado.toUpperCase()}
-                                </span>
-                                <span class="text-sm text-gray-600">📅 ${ticket.fecha}</span>
-                            </div>
-                            
-                            <div class="grid grid-cols-2 gap-3 mb-3">
-                                <div>
-                                    <span class="text-xs font-semibold text-gray-600">Placa:</span>
-                                    <p class="text-lg font-bold text-indigo-900">${ticket.placa}</p>
-                                </div>
-                                <div>
-                                    <span class="text-xs font-semibold text-gray-600">Conductor:</span>
-                                    <p class="text-lg font-bold text-gray-800">${ticket.nombre}</p>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <span class="text-xs font-semibold text-gray-600">Novedad:</span>
-                                <p class="text-gray-700 mt-1">${ticket.novedad}</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex flex-col gap-2 ml-4">
-                            <button onclick="cambiarEstado(${ticket.id})" 
-                                    class="px-4 py-2 ${
-                                        ticket.estado === 'abierto' 
-                                        ? 'bg-green-600 hover:bg-green-700' 
-                                        : 'bg-yellow-600 hover:bg-yellow-700'
-                                    } text-white rounded-lg text-sm font-semibold transition">
-                                ${ticket.estado === 'abierto' ? '✓ Cerrar' : '↺ Reabrir'}
-                            </button>
-                            <button onclick="eliminarTicket(${ticket.id})" 
-                                    class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold transition">
-                                🗑️ Eliminar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
+    await addDoc(ref, {
+      fecha: new Date().toLocaleString("es-CO"),
+      placa: placaInput.value.toUpperCase(),
+      nombre: nombreInput.value,
+      novedad: novedadInput.value,
+      estado: "abierto"
+    });
 
-        // Cambiar estado del ticket
-        async function cambiarEstado(id) {
-            const ticket = tickets.find(t => t.id === id);
-            if (ticket) {
-                ticket.estado = ticket.estado === 'abierto' ? 'cerrado' : 'abierto';
-                await guardarDatos();
-                renderizarTickets();
-            }
-        }
+    placaInput.value = "";
+    nombreInput.value = "";
+    novedadInput.value = "";
 
-        // Eliminar ticket
-        async function eliminarTicket(id) {
-            if (confirm('¿Estás seguro de eliminar este ticket?')) {
-                tickets = tickets.filter(t => t.id !== id);
-                await guardarDatos();
-                renderizarTickets();
-            }
-        }
+    msgExito.classList.remove("hidden");
+    setTimeout(() => msgExito.classList.add("hidden"), 3000);
+  };
 
-        // Borrar todos los tickets
-        async function borrarTodos() {
-            if (confirm('¿Estás seguro de eliminar TODOS los tickets? Esta acción no se puede deshacer.')) {
-                tickets = [];
-                notificacionesPendientes = 0;
-                await guardarDatos();
-                await window.storage.set('notificaciones_pendientes', '0');
-                renderizarTickets();
-                mostrarNotificaciones();
-            }
-        }
+  window.cargarTickets = async () => {
+    tablaTickets.innerHTML = "";
+    const snap = await getDocs(ref);
 
-        // Exportar a Excel
-        function exportarExcel() {
-            if (tickets.length === 0) {
-                alert('No hay tickets para exportar');
-                return;
-            }
+    snap.forEach(d => {
+      const t = d.data();
+      tablaTickets.innerHTML += `
+        <tr>
+          <td class="border p-2">${t.fecha}</td>
+          <td class="border p-2">${t.placa}</td>
+          <td class="border p-2">${t.nombre}</td>
+          <td class="border p-2">${t.novedad}</td>
+          <td class="border p-2">${t.estado}</td>
+          <td class="border p-2">
+            <button onclick="cambiarEstado('${d.id}','${t.estado}')">🔁</button>
+            <button onclick="eliminarTicket('${d.id}')">🗑️</button>
+          </td>
+        </tr>`;
+    });
+  };
 
-            // Preparar datos para Excel
-            const datosExcel = tickets.map(ticket => ({
-                'Fecha': ticket.fecha,
-                'Placa': ticket.placa,
-                'Conductor': ticket.nombre,
-                'Novedad': ticket.novedad,
-                'Estado': ticket.estado.toUpperCase()
-            }));
+  window.cambiarEstado = async (id, estado) => {
+    await updateDoc(doc(db, "tickets", id), {
+      estado: estado === "abierto" ? "cerrado" : "abierto"
+    });
+    cargarTickets();
+  };
 
-            // Crear workbook
-            const ws = XLSX.utils.json_to_sheet(datosExcel);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Tickets");
+  window.eliminarTicket = async (id) => {
+    if (confirm("¿Eliminar ticket?")) {
+      await deleteDoc(doc(db, "tickets", id));
+      cargarTickets();
+    }
+  };
 
-            // Ajustar ancho de columnas
-            const maxWidth = 50;
-            const wscols = [
-                { wch: 18 }, // Fecha
-                { wch: 10 }, // Placa
-                { wch: 25 }, // Conductor
-                { wch: maxWidth }, // Novedad
-                { wch: 10 }  // Estado
-            ];
-            ws['!cols'] = wscols;
+  window.exportarExcel = async () => {
+  const snap = await getDocs(ref);
 
-            // Descargar archivo
-            const fecha = new Date().toLocaleDateString('es-CO').replace(/\//g, '-');
-            XLSX.writeFile(wb, `tickets_conductores_${fecha}.xlsx`);
-        }
-    </script>
+  const data = [];
+  data.push(["Fecha", "Placa", "Nombre", "Novedad", "Estado"]);
+
+  snap.forEach(d => {
+    const t = d.data();
+    data.push([
+      t.fecha,
+      t.placa,
+      t.nombre,
+      t.novedad,
+      t.estado
+    ]);
+  });
+
+  // Crear hoja y libro
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Tickets");
+
+  // Descargar archivo Excel
+  XLSX.writeFile(wb, "tickets.xlsx");
+};
+
+</script>
+
 </body>
 </html>
