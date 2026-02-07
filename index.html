@@ -44,9 +44,9 @@
       
       <!-- Botón para abrir cámara -->
       <input type="file" id="inputFoto" accept="image/*" capture="environment" 
-        class="hidden" onchange="previsualizarFoto(event)">
+        class="hidden">
       
-      <button type="button" onclick="document.getElementById('inputFoto').click()" 
+      <button type="button" id="btnTomarFoto"
         class="bg-gray-600 text-white px-4 py-2 rounded w-full mb-2">
         📷 Tomar Foto
       </button>
@@ -54,14 +54,14 @@
       <!-- Preview de la foto -->
       <div id="previewFoto" class="hidden">
         <img id="imagenPreview" class="w-full rounded border mb-2 max-h-64 object-cover" alt="Preview">
-        <button type="button" onclick="eliminarFoto()" 
+        <button type="button" id="btnEliminarFoto"
           class="bg-red-600 text-white px-3 py-1 rounded text-sm w-full">
           Eliminar foto
         </button>
       </div>
     </div>
 
-    <button onclick="crearTicket()" class="bg-blue-600 text-white px-4 py-2 rounded w-full">
+    <button id="btnEnviarTicket" class="bg-blue-600 text-white px-4 py-2 rounded w-full">
       Enviar Ticket
     </button>
 
@@ -77,7 +77,7 @@
     <div id="loginAdmin" class="mb-4">
       <input id="emailAdmin" type="email" placeholder="Correo admin" class="border p-2 rounded w-full mb-2">
       <input id="passAdmin" type="password" placeholder="Contraseña" class="border p-2 rounded w-full mb-2">
-      <button onclick="loginAdminFn()" class="bg-gray-800 text-white px-4 py-2 rounded w-full">
+      <button id="btnLoginAdmin" class="bg-gray-800 text-white px-4 py-2 rounded w-full">
         Ingresar
       </button>
     </div>
@@ -86,15 +86,15 @@
     <div id="panelAdmin" class="hidden">
 
       <div class="flex flex-col md:flex-row md:justify-between gap-3 mb-4">
-        <button onclick="cargarTickets()" class="bg-green-600 text-white px-3 py-2 rounded text-sm">
+        <button id="btnActualizar" class="bg-green-600 text-white px-3 py-2 rounded text-sm">
           Actualizar
         </button>
 
-        <button onclick="exportarExcel()" class="bg-emerald-600 text-white px-3 py-2 rounded text-sm">
+        <button id="btnExportar" class="bg-emerald-600 text-white px-3 py-2 rounded text-sm">
           Exportar Excel
         </button>
 
-        <button onclick="logoutAdmin()" class="bg-red-600 text-white px-3 py-2 rounded text-sm">
+        <button id="btnLogout" class="bg-red-600 text-white px-3 py-2 rounded text-sm">
           Cerrar sesión
         </button>
       </div>
@@ -129,7 +129,7 @@
   <!-- COPYRIGHT -->
   <footer class="mt-8 pt-4 border-t border-gray-300">
     <p class="text-center text-sm text-gray-600">
-      © 2026 <strong>Anderson Alzate</strong>. Todos los derechos reservados.
+      © 2025 <strong>Anderson Alzate</strong>. Todos los derechos reservados.
     </p>
   </footer>
 
@@ -180,13 +180,18 @@ const passAdmin = document.getElementById("passAdmin");
 const tablaTickets = document.getElementById("tablaTickets");
 const cardsTickets = document.getElementById("cardsTickets");
 
+const inputFoto = document.getElementById("inputFoto");
 const previewFoto = document.getElementById("previewFoto");
 const imagenPreview = document.getElementById("imagenPreview");
 
 let fotoBase64 = null;
 
 /* ===== MANEJO DE FOTOS ===== */
-window.previsualizarFoto = (event) => {
+document.getElementById("btnTomarFoto").addEventListener("click", () => {
+  inputFoto.click();
+});
+
+inputFoto.addEventListener("change", (event) => {
   const file = event.target.files[0];
   if (!file) return;
 
@@ -199,38 +204,13 @@ window.previsualizarFoto = (event) => {
     });
   };
   reader.readAsDataURL(file);
-};
+});
 
-// Función para comprimir imagen (versión mejorada)
-function comprimirImagen(base64, callback) {
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.createElement('canvas');
-    let width = img.width;
-    let height = img.height;
-    
-    // Redimensionar a tamaño máximo más pequeño para mayor compresión
-    const maxDimension = 600; // Reducido de 800 a 600
-    if (width > maxDimension || height > maxDimension) {
-      if (width > height) {
-        height *= maxDimension / width;
-        width = maxDimension;
-      } else {
-        width *= maxDimension / height;
-        height = maxDimension;
-      }
-    }
-    
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0, width, height);
-    
-    // Comprimir a 60% de calidad (reducido de 70% a 60%)
-    callback(canvas.toDataURL('image/jpeg', 0.6));
-  };
-  img.src = base64;
-}
+document.getElementById("btnEliminarFoto").addEventListener("click", () => {
+  fotoBase64 = null;
+  inputFoto.value = "";
+  previewFoto.classList.add("hidden");
+});
 
 // Función para comprimir imagen
 function comprimirImagen(base64, callback) {
@@ -241,7 +221,7 @@ function comprimirImagen(base64, callback) {
     let height = img.height;
     
     // Redimensionar si es muy grande
-    const maxDimension = 800;
+    const maxDimension = 600;
     if (width > maxDimension || height > maxDimension) {
       if (width > height) {
         height *= maxDimension / width;
@@ -257,17 +237,11 @@ function comprimirImagen(base64, callback) {
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0, width, height);
     
-    // Comprimir a 70% de calidad
-    callback(canvas.toDataURL('image/jpeg', 0.7));
+    // Comprimir a 60% de calidad
+    callback(canvas.toDataURL('image/jpeg', 0.6));
   };
   img.src = base64;
 }
-
-window.eliminarFoto = () => {
-  fotoBase64 = null;
-  document.getElementById("inputFoto").value = "";
-  previewFoto.classList.add("hidden");
-};
 
 /* ===== FECHAS ===== */
 function parseFecha(f) {
@@ -297,195 +271,251 @@ function tiempo(i, f) {
 }
 
 /* VISTAS */
-window.mostrarVista = v => {
+window.mostrarVista = (v) => {
   vistaConductor.classList.add("hidden");
   vistaAdmin.classList.add("hidden");
   (v === "admin" ? vistaAdmin : vistaConductor).classList.remove("hidden");
 };
 
 /* AUTH */
-window.loginAdminFn = () =>
+document.getElementById("btnLoginAdmin").addEventListener("click", () => {
   signInWithEmailAndPassword(auth, emailAdmin.value, passAdmin.value)
     .catch(() => alert("Credenciales incorrectas"));
+});
 
-window.logoutAdmin = () => signOut(auth);
+document.getElementById("btnLogout").addEventListener("click", () => {
+  signOut(auth);
+});
 
 onAuthStateChanged(auth, u => {
   loginAdmin.classList.toggle("hidden", !!u);
   panelAdmin.classList.toggle("hidden", !u);
-  mostrarVista(u ? "admin" : "conductor");
+  window.mostrarVista(u ? "admin" : "conductor");
   if (u) cargarTickets();
 });
 
 /* TICKETS */
-window.crearTicket = async () => {
+document.getElementById("btnEnviarTicket").addEventListener("click", async () => {
   if (!placaInput.value || !nombreInput.value || !novedadInput.value) {
     alert("Completa todos los campos");
     return;
   }
 
-  await addDoc(ref, {
-    placa: placaInput.value.toUpperCase(),
-    nombre: nombreInput.value,
-    novedad: novedadInput.value,
-    estado: "abierto",
-    observaciones: "",
-    fechaCreacion: Timestamp.now(),
-    fechaCierre: null,
-    foto: fotoBase64 // Guardamos la foto en base64
-  });
+  try {
+    await addDoc(ref, {
+      placa: placaInput.value.toUpperCase(),
+      nombre: nombreInput.value,
+      novedad: novedadInput.value,
+      estado: "abierto",
+      observaciones: "",
+      fechaCreacion: Timestamp.now(),
+      fechaCierre: null,
+      foto: fotoBase64
+    });
 
-  placaInput.value = nombreInput.value = novedadInput.value = "";
-  eliminarFoto();
-  msgExito.classList.remove("hidden");
-  setTimeout(() => msgExito.classList.add("hidden"), 3000);
-};
-
-window.cargarTickets = async () => {
-  tablaTickets.innerHTML = "";
-  cardsTickets.innerHTML = "";
-  const s = await getDocs(ref);
-
-  s.forEach(d => {
-    const t = d.data();
+    placaInput.value = "";
+    nombreInput.value = "";
+    novedadInput.value = "";
+    fotoBase64 = null;
+    inputFoto.value = "";
+    previewFoto.classList.add("hidden");
     
-    // TABLA PC
-    tablaTickets.innerHTML += `
-      <tr>
-        <td class="border p-2">${fmt(t.fechaCreacion)}</td>
-        <td class="border p-2">${fmt(t.fechaCierre)}</td>
-        <td class="border p-2">${tiempo(t.fechaCreacion, t.fechaCierre)}</td>
-        <td class="border p-2">${t.placa}</td>
-        <td class="border p-2">${t.nombre}</td>
-        <td class="border p-2">${t.novedad}</td>
-        <td class="border p-2">
-          ${t.foto ? `<button onclick="verFoto('${d.id}')" class="text-blue-600 hover:underline">📷 Ver</button>` : '-'}
-        </td>
-        <td class="border p-2">
-          <input class="border p-1 w-full" value="${t.observaciones || ""}"
-            onchange="guardarObs('${d.id}', this.value)">
-        </td>
-        <td class="border p-2 font-bold ${t.estado === "abierto" ? "text-red-600" : "text-green-600"}">
-          ${t.estado.toUpperCase()}
-        </td>
-        <td class="border p-2">
-          <button onclick="cerrarTicket('${d.id}')" class="bg-green-600 text-white px-2 rounded">✔</button>
-          <button onclick="eliminarTicket('${d.id}')" class="bg-red-600 text-white px-2 rounded">🗑</button>
-        </td>
-      </tr>`;
+    msgExito.classList.remove("hidden");
+    setTimeout(() => msgExito.classList.add("hidden"), 3000);
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Error al enviar el ticket: " + error.message);
+  }
+});
 
-    // CARDS MÓVIL
-    cardsTickets.innerHTML += `
-      <div class="border rounded p-3 bg-gray-50">
-        <div class="flex justify-between items-start mb-2">
-          <span class="font-bold text-lg">${t.placa}</span>
-          <span class="font-bold ${t.estado === "abierto" ? "text-red-600" : "text-green-600"}">
+document.getElementById("btnActualizar").addEventListener("click", () => {
+  cargarTickets();
+});
+
+async function cargarTickets() {
+  try {
+    tablaTickets.innerHTML = "";
+    cardsTickets.innerHTML = "";
+    const s = await getDocs(ref);
+
+    s.forEach(d => {
+      const t = d.data();
+      
+      // TABLA PC
+      tablaTickets.innerHTML += `
+        <tr>
+          <td class="border p-2">${fmt(t.fechaCreacion)}</td>
+          <td class="border p-2">${fmt(t.fechaCierre)}</td>
+          <td class="border p-2">${tiempo(t.fechaCreacion, t.fechaCierre)}</td>
+          <td class="border p-2">${t.placa}</td>
+          <td class="border p-2">${t.nombre}</td>
+          <td class="border p-2">${t.novedad}</td>
+          <td class="border p-2">
+            ${t.foto ? `<button onclick="verFotoModal('${d.id}')" class="text-blue-600 hover:underline">📷 Ver</button>` : '-'}
+          </td>
+          <td class="border p-2">
+            <input class="border p-1 w-full" value="${t.observaciones || ""}"
+              onchange="guardarObservacion('${d.id}', this.value)">
+          </td>
+          <td class="border p-2 font-bold ${t.estado === "abierto" ? "text-red-600" : "text-green-600"}">
             ${t.estado.toUpperCase()}
-          </span>
-        </div>
-        
-        <p class="text-sm mb-1"><strong>Conductor:</strong> ${t.nombre}</p>
-        <p class="text-sm mb-1"><strong>Novedad:</strong> ${t.novedad}</p>
-        <p class="text-sm mb-1"><strong>Creación:</strong> ${fmt(t.fechaCreacion)}</p>
-        <p class="text-sm mb-1"><strong>Cierre:</strong> ${fmt(t.fechaCierre)}</p>
-        <p class="text-sm mb-2"><strong>Tiempo:</strong> ${tiempo(t.fechaCreacion, t.fechaCierre)}</p>
-        
-        ${t.foto ? `
-          <div class="mb-2">
-            <img src="${t.foto}" class="w-full rounded border cursor-pointer" 
-              onclick="verFoto('${d.id}')" alt="Evidencia">
+          </td>
+          <td class="border p-2">
+            <button onclick="cerrarTicketFn('${d.id}')" class="bg-green-600 text-white px-2 py-1 rounded">✔</button>
+            <button onclick="eliminarTicketFn('${d.id}')" class="bg-red-600 text-white px-2 py-1 rounded ml-1">🗑</button>
+          </td>
+        </tr>`;
+
+      // CARDS MÓVIL
+      cardsTickets.innerHTML += `
+        <div class="border rounded p-3 bg-gray-50">
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-bold text-lg">${t.placa}</span>
+            <span class="font-bold ${t.estado === "abierto" ? "text-red-600" : "text-green-600"}">
+              ${t.estado.toUpperCase()}
+            </span>
           </div>
-        ` : ''}
-        
-        <textarea class="border p-2 w-full text-sm mb-2 rounded" 
-          placeholder="Observaciones" 
-          onchange="guardarObs('${d.id}', this.value)">${t.observaciones || ""}</textarea>
-        
-        <div class="flex gap-2">
-          <button onclick="cerrarTicket('${d.id}')" 
-            class="bg-green-600 text-white px-3 py-1 rounded text-sm flex-1">
-            ✔ Cerrar
-          </button>
-          <button onclick="eliminarTicket('${d.id}')" 
-            class="bg-red-600 text-white px-3 py-1 rounded text-sm">
-            🗑
-          </button>
-        </div>
-      </div>`;
-  });
-};
+          
+          <p class="text-sm mb-1"><strong>Conductor:</strong> ${t.nombre}</p>
+          <p class="text-sm mb-1"><strong>Novedad:</strong> ${t.novedad}</p>
+          <p class="text-sm mb-1"><strong>Creación:</strong> ${fmt(t.fechaCreacion)}</p>
+          <p class="text-sm mb-1"><strong>Cierre:</strong> ${fmt(t.fechaCierre)}</p>
+          <p class="text-sm mb-2"><strong>Tiempo:</strong> ${tiempo(t.fechaCreacion, t.fechaCierre)}</p>
+          
+          ${t.foto ? `
+            <div class="mb-2">
+              <img src="${t.foto}" class="w-full rounded border cursor-pointer" 
+                onclick="verFotoModal('${d.id}')" alt="Evidencia">
+            </div>
+          ` : ''}
+          
+          <textarea class="border p-2 w-full text-sm mb-2 rounded" 
+            placeholder="Observaciones" 
+            onchange="guardarObservacion('${d.id}', this.value)">${t.observaciones || ""}</textarea>
+          
+          <div class="flex gap-2">
+            <button onclick="cerrarTicketFn('${d.id}')" 
+              class="bg-green-600 text-white px-3 py-1 rounded text-sm flex-1">
+              ✔ Cerrar
+            </button>
+            <button onclick="eliminarTicketFn('${d.id}')" 
+              class="bg-red-600 text-white px-3 py-1 rounded text-sm">
+              🗑
+            </button>
+          </div>
+        </div>`;
+    });
+  } catch (error) {
+    console.error("Error cargando tickets:", error);
+    alert("Error al cargar tickets: " + error.message);
+  }
+}
 
 // Ver foto en modal
-window.verFoto = async (id) => {
-  const docSnap = await getDocs(ref);
-  let fotoEncontrada = null;
-  
-  docSnap.forEach(d => {
-    if (d.id === id) {
-      fotoEncontrada = d.data().foto;
+window.verFotoModal = async (id) => {
+  try {
+    const docSnap = await getDocs(ref);
+    let fotoEncontrada = null;
+    
+    docSnap.forEach(d => {
+      if (d.id === id) {
+        fotoEncontrada = d.data().foto;
+      }
+    });
+    
+    if (fotoEncontrada) {
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
+      modal.onclick = () => modal.remove();
+      modal.innerHTML = `
+        <div class="max-w-4xl max-h-full">
+          <img src="${fotoEncontrada}" class="max-w-full max-h-screen rounded">
+        </div>
+      `;
+      document.body.appendChild(modal);
     }
-  });
-  
-  if (fotoEncontrada) {
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
-    modal.onclick = () => modal.remove();
-    modal.innerHTML = `
-      <div class="max-w-4xl max-h-full">
-        <img src="${fotoEncontrada}" class="max-w-full max-h-screen rounded">
-      </div>
-    `;
-    document.body.appendChild(modal);
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Error al cargar la foto");
   }
 };
 
-window.guardarObs = (id, o) =>
-  updateDoc(doc(db, "tickets", id), { observaciones: o });
+window.guardarObservacion = async (id, obs) => {
+  try {
+    await updateDoc(doc(db, "tickets", id), { observaciones: obs });
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Error al guardar observación");
+  }
+};
 
-window.cerrarTicket = id =>
-  updateDoc(doc(db, "tickets", id), {
-    estado: "cerrado",
-    fechaCierre: Timestamp.now()
-  }).then(cargarTickets);
+window.cerrarTicketFn = async (id) => {
+  try {
+    await updateDoc(doc(db, "tickets", id), {
+      estado: "cerrado",
+      fechaCierre: Timestamp.now()
+    });
+    cargarTickets();
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Error al cerrar ticket");
+  }
+};
 
-window.eliminarTicket = id =>
-  confirm("¿Eliminar ticket?") &&
-  deleteDoc(doc(db, "tickets", id)).then(cargarTickets);
+window.eliminarTicketFn = async (id) => {
+  if (confirm("¿Eliminar ticket?")) {
+    try {
+      await deleteDoc(doc(db, "tickets", id));
+      cargarTickets();
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error al eliminar ticket");
+    }
+  }
+};
 
 /* EXPORTAR EXCEL */
-window.exportarExcel = async () => {
-  const snap = await getDocs(ref);
-  if (snap.empty) { alert("No hay tickets para exportar"); return; }
+document.getElementById("btnExportar").addEventListener("click", async () => {
+  try {
+    const snap = await getDocs(ref);
+    if (snap.empty) { 
+      alert("No hay tickets para exportar"); 
+      return; 
+    }
 
-  const data = [];
-  snap.forEach(d => {
-    const t = d.data();
-    data.push({
-      "Fecha Creación": fmt(t.fechaCreacion),
-      "Fecha Cierre": fmt(t.fechaCierre),
-      "Tiempo": tiempo(t.fechaCreacion, t.fechaCierre),
-      "Placa": t.placa,
-      "Conductor": t.nombre,
-      "Novedad": t.novedad,
-      "Observaciones": t.observaciones || "",
-      "Estado": t.estado.toUpperCase(),
-      "Tiene Foto": t.foto ? "SÍ" : "NO"
+    const data = [];
+    snap.forEach(d => {
+      const t = d.data();
+      data.push({
+        "Fecha Creación": fmt(t.fechaCreacion),
+        "Fecha Cierre": fmt(t.fechaCierre),
+        "Tiempo": tiempo(t.fechaCreacion, t.fechaCierre),
+        "Placa": t.placa,
+        "Conductor": t.nombre,
+        "Novedad": t.novedad,
+        "Observaciones": t.observaciones || "",
+        "Estado": t.estado.toUpperCase(),
+        "Tiene Foto": t.foto ? "SÍ" : "NO"
+      });
     });
-  });
 
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Tickets");
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Tickets");
 
-  ws["!cols"] = [
-    { wch: 18 }, { wch: 18 }, { wch: 10 },
-    { wch: 10 }, { wch: 25 }, { wch: 40 },
-    { wch: 40 }, { wch: 10 }, { wch: 10 }
-  ];
+    ws["!cols"] = [
+      { wch: 18 }, { wch: 18 }, { wch: 10 },
+      { wch: 10 }, { wch: 25 }, { wch: 40 },
+      { wch: 40 }, { wch: 10 }, { wch: 10 }
+    ];
 
-  const fecha = new Date().toISOString().slice(0,10);
-  XLSX.writeFile(wb, `tickets_${fecha}.xlsx`);
-};
+    const fecha = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, `tickets_${fecha}.xlsx`);
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Error al exportar: " + error.message);
+  }
+});
 </script>
 
 </body>
