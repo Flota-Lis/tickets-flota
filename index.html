@@ -4,7 +4,11 @@
   <meta charset="UTF-8">
   <title>Sistema de Tickets</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- XLSX -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen p-3 md:p-6">
@@ -62,6 +66,11 @@
         <button onclick="cargarTickets()" class="bg-green-600 text-white px-3 py-2 rounded text-sm">
           Actualizar
         </button>
+
+        <button onclick="exportarExcel()" class="bg-emerald-600 text-white px-3 py-2 rounded text-sm">
+          Exportar Excel
+        </button>
+
         <button onclick="logoutAdmin()" class="bg-red-600 text-white px-3 py-2 rounded text-sm">
           Cerrar sesión
         </button>
@@ -122,9 +131,9 @@ const vistaAdmin = document.getElementById("vistaAdmin");
 const loginAdmin = document.getElementById("loginAdmin");
 const panelAdmin = document.getElementById("panelAdmin");
 
-const placa = document.getElementById("placa");
-const nombre = document.getElementById("nombre");
-const novedad = document.getElementById("novedad");
+const placaInput = document.getElementById("placa");
+const nombreInput = document.getElementById("nombre");
+const novedadInput = document.getElementById("novedad");
 const msgExito = document.getElementById("msgExito");
 
 const emailAdmin = document.getElementById("emailAdmin");
@@ -133,7 +142,7 @@ const passAdmin = document.getElementById("passAdmin");
 const tablaTickets = document.getElementById("tablaTickets");
 const cardsTickets = document.getElementById("cardsTickets");
 
-/* ===== FECHAS SEGURAS ===== */
+/* ===== FECHAS ===== */
 function parseFecha(f) {
   if (!f) return null;
   if (typeof f.toDate === "function") return f.toDate();
@@ -183,17 +192,22 @@ onAuthStateChanged(auth, u => {
 
 /* TICKETS */
 window.crearTicket = async () => {
+  if (!placaInput.value || !nombreInput.value || !novedadInput.value) {
+    alert("Completa todos los campos");
+    return;
+  }
+
   await addDoc(ref, {
-    placa: placa.value.toUpperCase(),
-    nombre: nombre.value,
-    novedad: novedad.value,
+    placa: placaInput.value.toUpperCase(),
+    nombre: nombreInput.value,
+    novedad: novedadInput.value,
     estado: "abierto",
     observaciones: "",
     fechaCreacion: Timestamp.now(),
     fechaCierre: null
   });
 
-  placa.value = nombre.value = novedad.value = "";
+  placaInput.value = nombreInput.value = novedadInput.value = "";
   msgExito.classList.remove("hidden");
   setTimeout(() => msgExito.classList.add("hidden"), 3000);
 };
@@ -206,7 +220,7 @@ window.cargarTickets = async () => {
   s.forEach(d => {
     const t = d.data();
     
-    // TABLA PC (como estaba)
+    // TABLA PC
     tablaTickets.innerHTML += `
       <tr>
         <td class="border p-2">${fmt(t.fechaCreacion)}</td>
@@ -223,12 +237,12 @@ window.cargarTickets = async () => {
           ${t.estado.toUpperCase()}
         </td>
         <td class="border p-2">
-          <button onclick="cerrarTicket('${d.id}')">✔</button>
-          <button onclick="eliminarTicket('${d.id}')">🗑</button>
+          <button onclick="cerrarTicket('${d.id}')" class="bg-green-600 text-white px-2 rounded">✔</button>
+          <button onclick="eliminarTicket('${d.id}')" class="bg-red-600 text-white px-2 rounded">🗑</button>
         </td>
       </tr>`;
 
-    // CARDS MÓVIL (nuevo)
+    // CARDS MÓVIL
     cardsTickets.innerHTML += `
       <div class="border rounded p-3 bg-gray-50">
         <div class="flex justify-between items-start mb-2">
@@ -274,6 +288,40 @@ window.cerrarTicket = id =>
 window.eliminarTicket = id =>
   confirm("¿Eliminar ticket?") &&
   deleteDoc(doc(db, "tickets", id)).then(cargarTickets);
+
+/* EXPORTAR EXCEL */
+window.exportarExcel = async () => {
+  const snap = await getDocs(ref);
+  if (snap.empty) { alert("No hay tickets para exportar"); return; }
+
+  const data = [];
+  snap.forEach(d => {
+    const t = d.data();
+    data.push({
+      "Fecha Creación": fmt(t.fechaCreacion),
+      "Fecha Cierre": fmt(t.fechaCierre),
+      "Tiempo": tiempo(t.fechaCreacion, t.fechaCierre),
+      "Placa": t.placa,
+      "Conductor": t.nombre,
+      "Novedad": t.novedad,
+      "Observaciones": t.observaciones || "",
+      "Estado": t.estado.toUpperCase()
+    });
+  });
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Tickets");
+
+  ws["!cols"] = [
+    { wch: 18 }, { wch: 18 }, { wch: 10 },
+    { wch: 10 }, { wch: 25 }, { wch: 40 },
+    { wch: 40 }, { wch: 10 }
+  ];
+
+  const fecha = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb, `tickets_${fecha}.xlsx`);
+};
 </script>
 
 </body>
