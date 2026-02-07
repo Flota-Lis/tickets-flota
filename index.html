@@ -190,15 +190,8 @@ window.previsualizarFoto = (event) => {
   const file = event.target.files[0];
   if (!file) return;
 
-  // Validar tamaño (máx 1MB para no exceder límites de Firestore)
-  if (file.size > 1024 * 1024) {
-    alert("La foto es muy grande. Por favor toma una foto de menor calidad.");
-    return;
-  }
-
   const reader = new FileReader();
   reader.onload = (e) => {
-    // Comprimir la imagen
     comprimirImagen(e.target.result, (imagenComprimida) => {
       fotoBase64 = imagenComprimida;
       imagenPreview.src = imagenComprimida;
@@ -207,6 +200,37 @@ window.previsualizarFoto = (event) => {
   };
   reader.readAsDataURL(file);
 };
+
+// Función para comprimir imagen (versión mejorada)
+function comprimirImagen(base64, callback) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    let width = img.width;
+    let height = img.height;
+    
+    // Redimensionar a tamaño máximo más pequeño para mayor compresión
+    const maxDimension = 600; // Reducido de 800 a 600
+    if (width > maxDimension || height > maxDimension) {
+      if (width > height) {
+        height *= maxDimension / width;
+        width = maxDimension;
+      } else {
+        width *= maxDimension / height;
+        height = maxDimension;
+      }
+    }
+    
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, width, height);
+    
+    // Comprimir a 60% de calidad (reducido de 70% a 60%)
+    callback(canvas.toDataURL('image/jpeg', 0.6));
+  };
+  img.src = base64;
+}
 
 // Función para comprimir imagen
 function comprimirImagen(base64, callback) {
