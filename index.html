@@ -38,6 +38,29 @@
     <input id="nombre" placeholder="Nombre del conductor" class="border p-2 rounded w-full mb-3">
     <textarea id="novedad" placeholder="Describe la novedad" class="border p-2 rounded w-full mb-3"></textarea>
 
+    <!-- NUEVA SECCIÓN DE CÁMARA -->
+    <div class="mb-3">
+      <label class="block text-sm font-medium mb-2">Evidencia fotográfica (opcional)</label>
+      
+      <!-- Botón para abrir cámara -->
+      <input type="file" id="inputFoto" accept="image/*" capture="environment" 
+        class="hidden" onchange="previsualizarFoto(event)">
+      
+      <button type="button" onclick="document.getElementById('inputFoto').click()" 
+        class="bg-gray-600 text-white px-4 py-2 rounded w-full mb-2">
+        📷 Tomar Foto
+      </button>
+
+      <!-- Preview de la foto -->
+      <div id="previewFoto" class="hidden">
+        <img id="imagenPreview" class="w-full rounded border mb-2 max-h-64 object-cover" alt="Preview">
+        <button type="button" onclick="eliminarFoto()" 
+          class="bg-red-600 text-white px-3 py-1 rounded text-sm w-full">
+          Eliminar foto
+        </button>
+      </div>
+    </div>
+
     <button onclick="crearTicket()" class="bg-blue-600 text-white px-4 py-2 rounded w-full">
       Enviar Ticket
     </button>
@@ -87,6 +110,7 @@
               <th class="border p-2">Placa</th>
               <th class="border p-2">Nombre</th>
               <th class="border p-2">Novedad</th>
+              <th class="border p-2">Foto</th>
               <th class="border p-2">Observaciones</th>
               <th class="border p-2">Estado</th>
               <th class="border p-2">Acciones</th>
@@ -101,6 +125,14 @@
 
     </div>
   </div>
+
+  <!-- COPYRIGHT -->
+  <footer class="mt-8 pt-4 border-t border-gray-300">
+    <p class="text-center text-sm text-gray-600">
+      © 2026 <strong>Anderson Alzate</strong>. Todos los derechos reservados.
+    </p>
+  </footer>
+
 </div>
 
 <script type="module">
@@ -113,6 +145,12 @@ import {
   getAuth, signInWithEmailAndPassword,
   onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+/* 
+ * Sistema de Tickets
+ * Copyright © 2025 Anderson Alzate
+ * Todos los derechos reservados.
+ */
 
 /* FIREBASE */
 const app = initializeApp({
@@ -141,6 +179,71 @@ const passAdmin = document.getElementById("passAdmin");
 
 const tablaTickets = document.getElementById("tablaTickets");
 const cardsTickets = document.getElementById("cardsTickets");
+
+const previewFoto = document.getElementById("previewFoto");
+const imagenPreview = document.getElementById("imagenPreview");
+
+let fotoBase64 = null;
+
+/* ===== MANEJO DE FOTOS ===== */
+window.previsualizarFoto = (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // Validar tamaño (máx 1MB para no exceder límites de Firestore)
+  if (file.size > 1024 * 1024) {
+    alert("La foto es muy grande. Por favor toma una foto de menor calidad.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    // Comprimir la imagen
+    comprimirImagen(e.target.result, (imagenComprimida) => {
+      fotoBase64 = imagenComprimida;
+      imagenPreview.src = imagenComprimida;
+      previewFoto.classList.remove("hidden");
+    });
+  };
+  reader.readAsDataURL(file);
+};
+
+// Función para comprimir imagen
+function comprimirImagen(base64, callback) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    let width = img.width;
+    let height = img.height;
+    
+    // Redimensionar si es muy grande
+    const maxDimension = 800;
+    if (width > maxDimension || height > maxDimension) {
+      if (width > height) {
+        height *= maxDimension / width;
+        width = maxDimension;
+      } else {
+        width *= maxDimension / height;
+        height = maxDimension;
+      }
+    }
+    
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, width, height);
+    
+    // Comprimir a 70% de calidad
+    callback(canvas.toDataURL('image/jpeg', 0.7));
+  };
+  img.src = base64;
+}
+
+window.eliminarFoto = () => {
+  fotoBase64 = null;
+  document.getElementById("inputFoto").value = "";
+  previewFoto.classList.add("hidden");
+};
 
 /* ===== FECHAS ===== */
 function parseFecha(f) {
@@ -204,10 +307,12 @@ window.crearTicket = async () => {
     estado: "abierto",
     observaciones: "",
     fechaCreacion: Timestamp.now(),
-    fechaCierre: null
+    fechaCierre: null,
+    foto: fotoBase64 // Guardamos la foto en base64
   });
 
   placaInput.value = nombreInput.value = novedadInput.value = "";
+  eliminarFoto();
   msgExito.classList.remove("hidden");
   setTimeout(() => msgExito.classList.add("hidden"), 3000);
 };
@@ -229,6 +334,9 @@ window.cargarTickets = async () => {
         <td class="border p-2">${t.placa}</td>
         <td class="border p-2">${t.nombre}</td>
         <td class="border p-2">${t.novedad}</td>
+        <td class="border p-2">
+          ${t.foto ? `<button onclick="verFoto('${d.id}')" class="text-blue-600 hover:underline">📷 Ver</button>` : '-'}
+        </td>
         <td class="border p-2">
           <input class="border p-1 w-full" value="${t.observaciones || ""}"
             onchange="guardarObs('${d.id}', this.value)">
@@ -258,6 +366,13 @@ window.cargarTickets = async () => {
         <p class="text-sm mb-1"><strong>Cierre:</strong> ${fmt(t.fechaCierre)}</p>
         <p class="text-sm mb-2"><strong>Tiempo:</strong> ${tiempo(t.fechaCreacion, t.fechaCierre)}</p>
         
+        ${t.foto ? `
+          <div class="mb-2">
+            <img src="${t.foto}" class="w-full rounded border cursor-pointer" 
+              onclick="verFoto('${d.id}')" alt="Evidencia">
+          </div>
+        ` : ''}
+        
         <textarea class="border p-2 w-full text-sm mb-2 rounded" 
           placeholder="Observaciones" 
           onchange="guardarObs('${d.id}', this.value)">${t.observaciones || ""}</textarea>
@@ -274,6 +389,30 @@ window.cargarTickets = async () => {
         </div>
       </div>`;
   });
+};
+
+// Ver foto en modal
+window.verFoto = async (id) => {
+  const docSnap = await getDocs(ref);
+  let fotoEncontrada = null;
+  
+  docSnap.forEach(d => {
+    if (d.id === id) {
+      fotoEncontrada = d.data().foto;
+    }
+  });
+  
+  if (fotoEncontrada) {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4';
+    modal.onclick = () => modal.remove();
+    modal.innerHTML = `
+      <div class="max-w-4xl max-h-full">
+        <img src="${fotoEncontrada}" class="max-w-full max-h-screen rounded">
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
 };
 
 window.guardarObs = (id, o) =>
@@ -305,7 +444,8 @@ window.exportarExcel = async () => {
       "Conductor": t.nombre,
       "Novedad": t.novedad,
       "Observaciones": t.observaciones || "",
-      "Estado": t.estado.toUpperCase()
+      "Estado": t.estado.toUpperCase(),
+      "Tiene Foto": t.foto ? "SÍ" : "NO"
     });
   });
 
@@ -316,7 +456,7 @@ window.exportarExcel = async () => {
   ws["!cols"] = [
     { wch: 18 }, { wch: 18 }, { wch: 10 },
     { wch: 10 }, { wch: 25 }, { wch: 40 },
-    { wch: 40 }, { wch: 10 }
+    { wch: 40 }, { wch: 10 }, { wch: 10 }
   ];
 
   const fecha = new Date().toISOString().slice(0,10);
