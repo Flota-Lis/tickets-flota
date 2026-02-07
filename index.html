@@ -205,6 +205,8 @@ window.cargarTickets = async () => {
 
   s.forEach(d => {
     const t = d.data();
+    
+    // TABLA PC (como estaba)
     tablaTickets.innerHTML += `
       <tr>
         <td class="border p-2">${fmt(t.fechaCreacion)}</td>
@@ -225,6 +227,38 @@ window.cargarTickets = async () => {
           <button onclick="eliminarTicket('${d.id}')">🗑</button>
         </td>
       </tr>`;
+
+    // CARDS MÓVIL (nuevo)
+    cardsTickets.innerHTML += `
+      <div class="border rounded p-3 bg-gray-50">
+        <div class="flex justify-between items-start mb-2">
+          <span class="font-bold text-lg">${t.placa}</span>
+          <span class="font-bold ${t.estado === "abierto" ? "text-red-600" : "text-green-600"}">
+            ${t.estado.toUpperCase()}
+          </span>
+        </div>
+        
+        <p class="text-sm mb-1"><strong>Conductor:</strong> ${t.nombre}</p>
+        <p class="text-sm mb-1"><strong>Novedad:</strong> ${t.novedad}</p>
+        <p class="text-sm mb-1"><strong>Creación:</strong> ${fmt(t.fechaCreacion)}</p>
+        <p class="text-sm mb-1"><strong>Cierre:</strong> ${fmt(t.fechaCierre)}</p>
+        <p class="text-sm mb-2"><strong>Tiempo:</strong> ${tiempo(t.fechaCreacion, t.fechaCierre)}</p>
+        
+        <textarea class="border p-2 w-full text-sm mb-2 rounded" 
+          placeholder="Observaciones" 
+          onchange="guardarObs('${d.id}', this.value)">${t.observaciones || ""}</textarea>
+        
+        <div class="flex gap-2">
+          <button onclick="cerrarTicket('${d.id}')" 
+            class="bg-green-600 text-white px-3 py-1 rounded text-sm flex-1">
+            ✔ Cerrar
+          </button>
+          <button onclick="eliminarTicket('${d.id}')" 
+            class="bg-red-600 text-white px-3 py-1 rounded text-sm">
+            🗑
+          </button>
+        </div>
+      </div>`;
   });
 };
 
