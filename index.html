@@ -109,6 +109,27 @@
     select.inp { appearance:none; cursor:pointer; }
     textarea.inp { resize:vertical; min-height:80px; }
 
+    /* ── EPP CHECKBOXES ── */
+    .epp-check-wrap {
+      background:var(--dark3); border:1px solid var(--border); border-radius:6px;
+      padding:0.6rem 0.85rem; margin-bottom:1rem;
+      display:flex; flex-direction:column; gap:0.5rem;
+    }
+    .epp-check-wrap:focus-within { border-color: var(--gold); }
+    .epp-check-label {
+      display:flex; align-items:center; gap:0.65rem;
+      cursor:pointer; font-size:0.92rem; color:#E2E8F0;
+      padding:0.3rem 0.4rem; border-radius:5px;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .epp-check-label:hover { background: rgba(200,150,12,0.08); }
+    .epp-check-label input[type="checkbox"] {
+      accent-color: var(--gold);
+      width: 16px; height: 16px;
+      cursor: pointer; flex-shrink: 0;
+    }
+
     /* ── BUTTONS ── */
     .btn-gold { background:var(--gold); color:#111; font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:1rem; letter-spacing:0.08em; text-transform:uppercase; padding:0.7rem 1.5rem; border:none; border-radius:6px; cursor:pointer; width:100%; transition:all 0.2s; position:relative; overflow:hidden; }
     .btn-gold:hover { background:var(--gold-light); }
@@ -374,14 +395,22 @@
           <option value="">— Selecciona cargo —</option>
         </select>
 
-        <label class="lbl">EPP Entregado</label>
-        <select id="ep-epp" class="inp">
-          <option value="">— Selecciona el EPP —</option>
-          <option>Casco de seguridad</option>
-          <option>Guantes de protección</option>
-          <option>Botas con puntera de acero</option>
-          <option>Gafas de seguridad</option>
-        </select>
+        <!-- ── EPP MULTI-SELECCIÓN CON CHECKBOXES ── -->
+        <label class="lbl">EPP Entregado <span style="color:var(--gold);font-size:0.68rem;">(puedes elegir varios)</span></label>
+        <div class="epp-check-wrap" id="ep-epp-wrap">
+          <label class="epp-check-label">
+            <input type="checkbox" class="epp-check" value="Casco de seguridad"> Casco de seguridad
+          </label>
+          <label class="epp-check-label">
+            <input type="checkbox" class="epp-check" value="Guantes de protección"> Guantes de protección
+          </label>
+          <label class="epp-check-label">
+            <input type="checkbox" class="epp-check" value="Botas con puntera de acero"> Botas con puntera de acero
+          </label>
+          <label class="epp-check-label">
+            <input type="checkbox" class="epp-check" value="Gafas de seguridad"> Gafas de seguridad
+          </label>
+        </div>
 
         <label class="lbl">Responsable de Entrega</label>
         <select id="ep-responsable" class="inp">
@@ -450,9 +479,9 @@ const app = initializeApp({
 const db   = getFirestore(app);
 const auth = getAuth(app);
 
-const colTickets = collection(db, "tickets");
-const colEPP     = collection(db, "epp_registros");
-const colUsuarios = collection(db, "usuarios"); // roles
+const colTickets  = collection(db, "tickets");
+const colEPP      = collection(db, "epp_registros");
+const colUsuarios = collection(db, "usuarios");
 
 /* ── CONFIGURACIÓN ── */
 const POR_PAGINA = 15;
@@ -467,14 +496,14 @@ const cargos = {
 };
 
 /* ── ESTADO LOCAL ── */
-let todosTickets    = [];
-let todosEPP        = [];
-let subTab          = 'ol';
-let paginaTickets   = 1;
-let paginaEPP       = 1;
-let unsubTickets    = null;
-let unsubEPP        = null;
-const fotoData      = { c: null, ep: null };
+let todosTickets  = [];
+let todosEPP      = [];
+let subTab        = 'ol';
+let paginaTickets = 1;
+let paginaEPP     = 1;
+let unsubTickets  = null;
+let unsubEPP      = null;
+const fotoData    = { c: null, ep: null };
 
 /* ── OFFLINE DETECTOR ── */
 window.addEventListener('online',  () => { document.getElementById('offline-banner').style.display = 'none';  toast('Conexión restaurada ✓', 'ok'); });
@@ -524,6 +553,9 @@ window.setSubTab = (area) => {
   selC.innerHTML = '<option value="">— Selecciona cargo —</option>';
   cargos[area].forEach(c => { const o = document.createElement('option'); o.textContent = c; selC.appendChild(o); });
 
+  // Limpiar checkboxes al cambiar sub-tab
+  document.querySelectorAll('.epp-check').forEach(c => c.checked = false);
+
   paginaEPP = 1;
   document.getElementById('ep-buscar').value = '';
   renderEPP(todosEPP.filter(r => r.area.toLowerCase() === subTab));
@@ -549,14 +581,12 @@ document.getElementById('c-novedad').addEventListener('input', function() {
   document.getElementById(p + '-foto-file').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
-    // Validar tamaño antes de comprimir
     if (file.size > 10 * 1024 * 1024) { toast('Foto muy grande (máx 10MB)', 'err'); return; }
     const reader = new FileReader();
     reader.onload = ev => comprimirImagen(ev.target.result, comp => {
       fotoData[p] = comp;
       document.getElementById(p + '-foto-img').src = comp;
       document.getElementById(p + '-foto-prev').style.display = 'block';
-      // Estimar tamaño comprimido
       const kb = Math.round((comp.length * 3/4) / 1024);
       toast(`Foto lista (~${kb}KB)`, 'ok');
     });
@@ -575,7 +605,6 @@ function comprimirImagen(base64, cb) {
   img.onload = () => {
     const canvas = document.createElement('canvas');
     let [w, h] = [img.width, img.height];
-    // Máx 480px, calidad 35% → ~50-70KB
     const max = 480;
     if (w > max || h > max) {
       if (w > h) { h = Math.round(h * max/w); w = max; }
@@ -584,10 +613,7 @@ function comprimirImagen(base64, cb) {
     canvas.width = w; canvas.height = h;
     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
     const result = canvas.toDataURL('image/jpeg', 0.35);
-    // Advertir si sigue siendo grande (>700KB en base64 ≈ ~500KB real)
-    if (result.length > 700000) {
-      toast('⚠️ Foto aún grande, puede fallar', 'inf');
-    }
+    if (result.length > 700000) { toast('⚠️ Foto aún grande, puede fallar', 'inf'); }
     cb(result);
   };
   img.src = base64;
@@ -605,9 +631,8 @@ window.loginFlota = async () => {
   btn.disabled = true; btn.textContent = 'Verificando...'; showLoader();
   try {
     const cred = await signInWithEmailAndPassword(auth, email, pass);
-    // Verificar rol en Firestore
     const rolDoc = await getDoc(doc(db, 'usuarios', cred.user.uid));
-    const rol = rolDoc.exists() ? rolDoc.data().rol : 'flota'; // default flota si no tiene doc
+    const rol = rolDoc.exists() ? rolDoc.data().rol : 'flota';
     if (rol !== 'flota' && rol !== 'admin') {
       await signOut(auth);
       errEl.textContent = 'No tienes acceso a este panel';
@@ -711,15 +736,10 @@ function suscribirTickets() {
     const prevCount = todosTickets.length;
     todosTickets = [];
     snap.forEach(d => todosTickets.push({ id: d.id, ...d.data() }));
-    // Notificar si llega uno nuevo
-    if (prevCount > 0 && todosTickets.length > prevCount) {
-      toast('🔔 Nuevo ticket recibido', 'inf');
-    }
+    if (prevCount > 0 && todosTickets.length > prevCount) { toast('🔔 Nuevo ticket recibido', 'inf'); }
     actualizarStatsTickets();
     filtrarTickets();
-  }, (err) => {
-    toast('Error cargando tickets: ' + err.message, 'err');
-  });
+  }, (err) => { toast('Error cargando tickets: ' + err.message, 'err'); });
 }
 
 /* ── TIEMPO REAL — EPP ── */
@@ -731,9 +751,7 @@ function suscribirEPP() {
     snap.forEach(d => todosEPP.push({ id: d.id, ...d.data() }));
     actualizarStatsEPP();
     filtrarEPP();
-  }, (err) => {
-    toast('Error cargando EPP: ' + err.message, 'err');
-  });
+  }, (err) => { toast('Error cargando EPP: ' + err.message, 'err'); });
 }
 
 /* ── STATS ── */
@@ -959,14 +977,17 @@ window.enviarTicket = async () => {
 window.enviarEPP = async () => {
   const nombre      = document.getElementById('ep-nombre').value.trim();
   const cargo       = document.getElementById('ep-cargo').value;
-  const epp         = document.getElementById('ep-epp').value;
   const responsable = document.getElementById('ep-responsable').value;
   const fecha       = document.getElementById('ep-fecha').value;
 
-  if (!nombre)      { toast('Ingresa el nombre del colaborador', 'err'); return; }
-  if (!cargo)       { toast('Selecciona el cargo', 'err'); return; }
-  if (!epp)         { toast('Selecciona el EPP', 'err'); return; }
-  if (!responsable) { toast('Selecciona el responsable', 'err'); return; }
+  // Obtener EPP seleccionados desde checkboxes
+  const eppSeleccionados = [...document.querySelectorAll('.epp-check:checked')].map(c => c.value);
+  const epp = eppSeleccionados.join(', ');
+
+  if (!nombre)                    { toast('Ingresa el nombre del colaborador', 'err'); return; }
+  if (!cargo)                     { toast('Selecciona el cargo', 'err'); return; }
+  if (eppSeleccionados.length === 0) { toast('Selecciona al menos un EPP', 'err'); return; }
+  if (!responsable)               { toast('Selecciona el responsable', 'err'); return; }
 
   const btn = document.getElementById('ep-btn-enviar');
   btn.disabled = true; btn.textContent = 'Guardando...'; showLoader();
@@ -978,11 +999,12 @@ window.enviarEPP = async () => {
       foto: fotoData.ep || null,
       fechaCreacion: Timestamp.now()
     });
-    document.getElementById('ep-nombre').value = '';
-    document.getElementById('ep-cargo').value  = '';
-    document.getElementById('ep-epp').value    = '';
-    document.getElementById('ep-responsable').value = '';
-    document.getElementById('ep-fecha').value  = fechaHoy();
+    document.getElementById('ep-nombre').value      = '';
+    document.getElementById('ep-cargo').value        = '';
+    document.getElementById('ep-responsable').value  = '';
+    document.getElementById('ep-fecha').value        = fechaHoy();
+    // Limpiar todos los checkboxes
+    document.querySelectorAll('.epp-check').forEach(c => c.checked = false);
     clearFoto('ep');
     toast('✅ Registro EPP guardado', 'ok');
   } catch(err) {
@@ -1028,7 +1050,6 @@ window.eliminarEPP = async (id) => {
 window.verFoto = async (id, tipo) => {
   showLoader();
   try {
-    const colRef = tipo === 'ticket' ? colTickets : colEPP;
     const nombre = tipo === 'ticket' ? 'tickets' : 'epp_registros';
     const snap   = await getDoc(doc(db, nombre, id));
     const foto   = snap.exists() ? snap.data().foto : null;
@@ -1083,7 +1104,7 @@ window.exportarSeguridad = async () => {
       });
     });
     const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [{wch:12},{wch:6},{wch:25},{wch:20},{wch:25},{wch:22},{wch:5},{wch:18}];
+    ws['!cols'] = [{wch:12},{wch:6},{wch:25},{wch:20},{wch:35},{wch:22},{wch:5},{wch:18}];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'EPP');
     XLSX.writeFile(wb, `seguridad_epp_${fechaHoy()}.xlsx`);
