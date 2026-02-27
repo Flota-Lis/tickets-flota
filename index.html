@@ -14,6 +14,7 @@
       --dark: #111318; --dark2: #1C2030; --dark3: #252A3A;
       --gray: #8A909E; --border: #2E3448;
       --red: #E53E3E; --green: #38A169; --blue: #3B82F6;
+      --purple: #805AD5; --purple-light: #B794F4;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Barlow', sans-serif; background: var(--dark); color: #E2E8F0; min-height: 100vh; }
@@ -67,10 +68,10 @@
     .app-logo { font-family:'Barlow Condensed',sans-serif; font-weight:900; font-size:1.35rem; letter-spacing:0.06em; color:var(--gold-light); }
     .app-logo span { color:#fff; }
 
-    .tab-bar { display:flex; background:var(--dark2); border-bottom:1px solid var(--border); }
+    .tab-bar { display:flex; background:var(--dark2); border-bottom:1px solid var(--border); overflow-x:auto; }
     .tab-btn {
       font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:0.9rem;
-      letter-spacing:0.1em; text-transform:uppercase; padding:0.85rem 1.6rem;
+      letter-spacing:0.1em; text-transform:uppercase; padding:0.85rem 1.4rem;
       border:none; background:transparent; color:var(--gray); cursor:pointer;
       border-bottom:3px solid transparent; white-space:nowrap; transition:all 0.2s; flex:1;
     }
@@ -130,6 +131,8 @@
     .btn-gre:hover { background:var(--green); color:#fff; }
     .btn-red { border-color:var(--red); color:var(--red); background:transparent; }
     .btn-red:hover { background:var(--red); color:#fff; }
+    .btn-purple { border-color:var(--purple); color:var(--purple-light); background:transparent; }
+    .btn-purple:hover { background:var(--purple); color:#fff; }
 
     .photo-btn { background:var(--dark3); border:1px dashed var(--border); color:var(--gray); font-family:'Barlow',sans-serif; font-size:0.88rem; padding:0.65rem; border-radius:6px; width:100%; cursor:pointer; transition:all 0.2s; margin-bottom:0.75rem; }
     .photo-btn:hover { border-color:var(--gold); color:var(--gold-light); }
@@ -144,6 +147,7 @@
     .badge-red { background:rgba(229,62,62,0.12); color:#FC8181; border-color:rgba(229,62,62,0.3); }
     .badge-grn { background:rgba(56,161,105,0.12); color:#68D391; border-color:rgba(56,161,105,0.3); }
     .badge-gold { background:rgba(200,150,12,0.12); color:var(--gold-light); border-color:rgba(200,150,12,0.3); }
+    .badge-purple { background:rgba(128,90,213,0.12); color:var(--purple-light); border-color:rgba(128,90,213,0.3); }
 
     .obs-inp { background:var(--dark3); border:1px solid var(--border); color:#E2E8F0; border-radius:4px; padding:0.3rem 0.5rem; font-size:0.8rem; width:100%; font-family:'Barlow',sans-serif; }
     .obs-inp:focus { outline:none; border-color:var(--gold); }
@@ -197,6 +201,7 @@
   <button class="tab-btn active" id="tab-conductor" onclick="switchTab('conductor')">🚛 Conductor</button>
   <button class="tab-btn" id="tab-flota"     onclick="switchTab('flota')">⚙️ Flota</button>
   <button class="tab-btn" id="tab-seguridad" onclick="switchTab('seguridad')">🔒 Seguridad</button>
+  <button class="tab-btn" id="tab-people"    onclick="switchTab('people')">👥 People</button>
 </nav>
 
 <!-- PANEL: CONDUCTOR -->
@@ -359,6 +364,31 @@
           <label class="epp-check-label">
             <input type="checkbox" class="epp-check" value="Gafas de seguridad"> Gafas de seguridad
           </label>
+          <!-- EPP exclusivos OL — se muestran/ocultan según sub-tab -->
+          <label class="epp-check-label epp-ol-only">
+            <input type="checkbox" class="epp-check" value="Guantes Anticorte Talla 8"> Guantes Anticorte Talla 8
+          </label>
+          <label class="epp-check-label epp-ol-only">
+            <input type="checkbox" class="epp-check" value="Guantes Anticorte Talla 10"> Guantes Anticorte Talla 10
+          </label>
+          <label class="epp-check-label epp-ol-only">
+            <input type="checkbox" class="epp-check" value="Cofias"> Cofias
+          </label>
+          <label class="epp-check-label epp-ol-only">
+            <input type="checkbox" class="epp-check" value="Protector Auditivo"> Protector Auditivo
+          </label>
+          <label class="epp-check-label epp-ol-only">
+            <input type="checkbox" class="epp-check" value="Monogafas de Sobreponer"> Monogafas de Sobreponer
+          </label>
+          <label class="epp-check-label epp-ol-only">
+            <input type="checkbox" class="epp-check" value="Guantes de Nitrilo"> Guantes de Nitrilo
+          </label>
+          <label class="epp-check-label epp-ol-only">
+            <input type="checkbox" class="epp-check" value="Guantes de Calor"> Guantes de Calor
+          </label>
+          <label class="epp-check-label epp-ol-only">
+            <input type="checkbox" class="epp-check" value="Mangas Anticorte"> Mangas Anticorte
+          </label>
         </div>
 
         <label class="lbl">Responsable de Entrega</label>
@@ -402,6 +432,180 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════ -->
+<!-- PANEL: PEOPLE                                  -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="panel" id="panel-people">
+  <div class="main">
+    <!-- LOGIN -->
+    <div id="ppl-login" class="login-wrap">
+      <div class="card">
+        <div class="sec-title" style="margin-bottom:1.2rem;">👥 Acceso People</div>
+        <label class="lbl">Correo</label>
+        <input id="pp-email" type="email" class="inp" placeholder="people@bavaria.com" onkeydown="if(event.key==='Enter')loginPeople()">
+        <label class="lbl">Contraseña</label>
+        <input id="pp-pass" type="password" class="inp" placeholder="••••••••" onkeydown="if(event.key==='Enter')loginPeople()">
+        <button class="btn-gold" id="pp-btn-login" onclick="loginPeople()">Ingresar</button>
+        <div id="pp-login-err" style="display:none;color:#FC8181;font-size:0.82rem;margin-top:0.6rem;text-align:center;"></div>
+      </div>
+    </div>
+
+    <!-- PANEL PRINCIPAL -->
+    <div id="ppl-panel" style="display:none;">
+
+      <!-- Stats -->
+      <div class="stats-row" style="grid-template-columns:1fr 1fr;" id="pp-stats">
+        <div class="stat-card"><div class="stat-num" id="st-pp-total" style="color:var(--purple-light);">-</div><div class="stat-lbl">Registros Área</div></div>
+        <div class="stat-card"><div class="stat-num" id="st-pp-hoy" style="color:#68D391;">-</div><div class="stat-lbl">Hoy</div></div>
+      </div>
+
+      <!-- Topbar -->
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:0.4rem;flex:1;">
+          <span class="live-dot"></span>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;letter-spacing:0.05em;color:var(--gold-light);text-transform:uppercase;">Panel People</span>
+        </div>
+        <button class="btn-sm btn-outline" onclick="exportarPeople()">↓ Excel Dotación</button>
+        <button class="btn-sm btn-red" onclick="logoutPeople()">Salir</button>
+      </div>
+
+      <!-- Sub-tabs OL / UC eliminados - People es un solo panel -->
+
+      <!-- Formulario -->
+      <div class="card">
+        <div id="ppl-form-title" class="sec-title" style="margin-bottom:1rem;font-size:1rem;">👕 Registrar Dotación</div>
+
+        <div class="g2">
+          <div>
+            <label class="lbl">Nombre del Colaborador</label>
+            <input id="pp-nombre" class="inp" placeholder="Nombre completo" oninput="this.value=this.value.toUpperCase()">
+          </div>
+          <div>
+            <label class="lbl">Cédula</label>
+            <input id="pp-cedula" class="inp" placeholder="Número de cédula" maxlength="12" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          </div>
+        </div>
+
+        <div class="g2">
+          <div style="grid-column:1;">
+            <label class="lbl">Fecha de Entrega</label>
+            <input id="pp-fecha" class="inp" type="date" readonly style="cursor:default;opacity:0.8;">
+          </div>
+        </div>
+
+        <div>
+          <label class="lbl">Cargo del Colaborador</label>
+          <select id="pp-cargo" class="inp">
+            <option value="">— Selecciona cargo —</option>
+          </select>
+        </div>
+
+        <div class="g2">
+          <div>
+            <label class="lbl">Talla de Camisa</label>
+            <select id="pp-talla-camisa" class="inp">
+              <option value="">— Selecciona talla —</option>
+              <option value="XS">XS</option>
+              <option value="S">S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+              <option value="XXL">XXL</option>
+              <option value="XXXL">XXXL</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl">Talla de Pantalón</label>
+            <select id="pp-talla-pantalon" class="inp">
+              <option value="">— Selecciona talla —</option>
+              <option value="28">28</option>
+              <option value="30">30</option>
+              <option value="32">32</option>
+              <option value="34">34</option>
+              <option value="36">36</option>
+              <option value="38">38</option>
+              <option value="40">40</option>
+              <option value="42">42</option>
+              <option value="44">44</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="g2">
+          <div>
+            <label class="lbl">Talla de Calzado</label>
+            <select id="pp-talla-calzado" class="inp">
+              <option value="">— Selecciona talla —</option>
+              <option value="35">35</option>
+              <option value="36">36</option>
+              <option value="37">37</option>
+              <option value="38">38</option>
+              <option value="39">39</option>
+              <option value="40">40</option>
+              <option value="41">41</option>
+              <option value="42">42</option>
+              <option value="43">43</option>
+              <option value="44">44</option>
+              <option value="45">45</option>
+            </select>
+          </div>
+        </div>
+
+        <label class="lbl">Dotación Entregada <span style="color:var(--gold);font-size:0.68rem;">(puedes elegir varias)</span></label>
+        <div class="epp-check-wrap" id="pp-dot-wrap">
+          <label class="epp-check-label">
+            <input type="checkbox" class="pp-dot-check" value="Botas"> Botas
+          </label>
+          <label class="epp-check-label">
+            <input type="checkbox" class="pp-dot-check" value="Camisa"> Camisa
+          </label>
+          <label class="epp-check-label">
+            <input type="checkbox" class="pp-dot-check" value="Pantalón"> Pantalón
+          </label>
+          <label class="epp-check-label">
+            <input type="checkbox" class="pp-dot-check" value="Chaleco"> Chaleco
+          </label>
+        </div>
+
+        <label class="lbl">Responsable de Entrega</label>
+        <select id="pp-responsable" class="inp">
+          <option value="">— Selecciona responsable —</option>
+        </select>
+
+        <label class="lbl">Observaciones (opcional)</label>
+        <textarea id="pp-obs" class="inp" placeholder="Notas adicionales sobre la entrega..." maxlength="300"></textarea>
+
+        <button class="btn-gold" id="pp-btn-enviar" onclick="enviarDotacion()">Registrar Entrega Dotación</button>
+      </div>
+
+      <!-- Historial -->
+      <div class="sec-title" style="font-size:1rem;margin-top:0.5rem;">
+        <span class="live-dot"></span> Historial de Registros
+      </div>
+
+      <div style="margin-bottom:1rem;">
+        <input id="pp-buscar" class="inp" style="margin:0;" placeholder="🔍 Buscar por nombre del colaborador..." oninput="filtrarDotacion()">
+      </div>
+
+      <div class="tbl-wrap" id="pp-tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th><th>Colaborador</th>
+              <th>Cédula</th><th>Cargo</th><th>T. Camisa</th><th>T. Pantalón</th><th>T. Calzado</th>
+              <th>Dotación</th><th>Responsable</th><th>Obs.</th><th>Eliminar</th>
+            </tr>
+          </thead>
+          <tbody id="pp-tbody"></tbody>
+        </table>
+      </div>
+      <div id="pp-cards"></div>
+      <div class="pag" id="pp-pag"></div>
+    </div>
+  </div>
+</div>
+<!-- FIN PANEL PEOPLE -->
+
 <footer style="text-align:center;padding:1.5rem;color:var(--gray);font-size:0.73rem;letter-spacing:0.05em;border-top:1px solid var(--border);margin-top:2rem;">
   © 2026 <strong style="color:var(--gold-light);">Anderson Alzate</strong> · Todos los derechos reservados
 </footer>
@@ -426,9 +630,10 @@ const app = initializeApp({
 const db   = getFirestore(app);
 const auth = getAuth(app);
 
-const colTickets  = collection(db, "tickets");
-const colEPP      = collection(db, "epp_registros");
-const colUsuarios = collection(db, "usuarios");
+const colTickets    = collection(db, "tickets");
+const colEPP        = collection(db, "epp_registros");
+const colDotacion   = collection(db, "dotacion_registros");  // ← NUEVA colección
+const colUsuarios   = collection(db, "usuarios");
 
 /* ── CONFIGURACIÓN ── */
 const POR_PAGINA = 15;
@@ -437,22 +642,27 @@ const responsables = {
   ol: ['JESUS DAVID ARRAEZ DUMAR','MARIA DEL CARMEN GUTIERREZ','DAYANA CUELLO','LILIANA MIRANDA'],
   uc: ['DEYSI MARIANA HOYOS ESPINOSA','MARIA PAULINA OSPINA VELASQUEZ','ANYI SORANY GASPAR UTIMA']
 };
+const responsablesPeople = ['JESUS DAVID ARRAEZ DUMAR','MARIA DEL CARMEN GUTIERREZ','DAYANA CUELLO','LILIANA MIRANDA','DEYSI MARIANA HOYOS ESPINOSA','MARIA PAULINA OSPINA VELASQUEZ','ANYI SORANY GASPAR UTIMA'];
 const cargos = {
   ol: ['Supervisor','Auxiliar Logístico','OPM','Verificador','Almacenista','Auxiliar de rampa','Jefe de operaciones','Auxiliar de inventario','Movilizador','Lider de mkp','Auxiliar de sst'],
   uc: ['Coordinador','RR','Conductor','Auxiliar de Reparto','Relevo','Movilizador','Líder de Ruta']
 };
 
 /* ── ESTADO LOCAL ── */
-let todosTickets         = [];
-let todosEPP             = [];
-let listaFiltradaTickets = [];  // ← NUEVO: guarda la lista filtrada actual
-let listaFiltradaEPP     = [];  // ← NUEVO: guarda la lista filtrada actual
-let subTab               = 'ol';
-let paginaTickets        = 1;
-let paginaEPP            = 1;
-let unsubTickets         = null;
-let unsubEPP             = null;
-const fotoData           = { c: null, ep: null };
+let todosTickets          = [];
+let todosEPP              = [];
+let todosDotacion         = [];
+let listaFiltradaTickets  = [];
+let listaFiltradaEPP      = [];
+let listaFiltradaDotacion = [];
+let subTab                = 'ol';
+let paginaTickets         = 1;
+let paginaEPP             = 1;
+let paginaDotacion        = 1;
+let unsubTickets          = null;
+let unsubEPP              = null;
+let unsubDotacion         = null;
+const fotoData            = { c: null, ep: null, pp: null };
 
 /* ── OFFLINE DETECTOR ── */
 window.addEventListener('online',  () => { document.getElementById('offline-banner').style.display = 'none';  toast('Conexión restaurada ✓', 'ok'); });
@@ -494,6 +704,12 @@ window.setSubTab = (area) => {
   document.getElementById('seg-form-title').textContent =
     isOL ? '📦 Registrar EPP · OL' : '🏭 Registrar EPP · UC';
 
+  // Mostrar/ocultar ítems exclusivos de OL
+  document.querySelectorAll('.epp-ol-only').forEach(el => {
+    el.style.display = isOL ? 'flex' : 'none';
+    if (!isOL) el.querySelector('input').checked = false;
+  });
+
   const selR = document.getElementById('ep-responsable');
   selR.innerHTML = '<option value="">— Selecciona responsable —</option>';
   responsables[area].forEach(r => { const o = document.createElement('option'); o.textContent = r; selR.appendChild(o); });
@@ -506,7 +722,6 @@ window.setSubTab = (area) => {
 
   paginaEPP = 1;
   document.getElementById('ep-buscar').value = '';
-  // Actualizar lista filtrada y renderizar
   listaFiltradaEPP = todosEPP.filter(r => r.area.toLowerCase() === subTab);
   renderEPP(listaFiltradaEPP);
 };
@@ -514,12 +729,20 @@ window.setSubTab = (area) => {
 /* ── FECHA ── */
 function fechaHoy() { return new Date().toISOString().split('T')[0]; }
 document.getElementById('ep-fecha').value = fechaHoy();
+document.getElementById('pp-fecha').value = fechaHoy();
 
-// Init OL por defecto
+// Init EPP OL por defecto
 const selRInit = document.getElementById('ep-responsable');
 responsables['ol'].forEach(r => { const o = document.createElement('option'); o.textContent = r; selRInit.appendChild(o); });
 const selCInit = document.getElementById('ep-cargo');
 cargos['ol'].forEach(c => { const o = document.createElement('option'); o.textContent = c; selCInit.appendChild(o); });
+
+// Init People - panel único, todos los responsables y cargos combinados
+const ppSelRInit = document.getElementById('pp-responsable');
+responsablesPeople.forEach(r => { const o = document.createElement('option'); o.textContent = r; ppSelRInit.appendChild(o); });
+const ppSelCInit = document.getElementById('pp-cargo');
+const todosCargos = [...new Set([...cargos['ol'], ...cargos['uc']])];
+todosCargos.forEach(c => { const o = document.createElement('option'); o.textContent = c; ppSelCInit.appendChild(o); });
 
 /* ── CONTADOR TEXTAREA ── */
 document.getElementById('c-novedad').addEventListener('input', function() {
@@ -569,7 +792,9 @@ function comprimirImagen(base64, cb) {
   img.src = base64;
 }
 
-/* ── AUTH FLOTA ── */
+/* ══════════════════════════════════════════════
+   AUTH FLOTA
+══════════════════════════════════════════════ */
 window.loginFlota = async () => {
   const email = document.getElementById('fl-email').value.trim();
   const pass  = document.getElementById('fl-pass').value;
@@ -623,7 +848,9 @@ function mostrarPanelFlota(email) {
   suscribirTickets();
 }
 
-/* ── AUTH SEGURIDAD ── */
+/* ══════════════════════════════════════════════
+   AUTH SEGURIDAD
+══════════════════════════════════════════════ */
 window.loginSeguridad = async () => {
   const email = document.getElementById('sg-email').value.trim();
   const pass  = document.getElementById('sg-pass').value;
@@ -678,7 +905,65 @@ function mostrarPanelSeguridad(email) {
   suscribirEPP();
 }
 
-/* ── TIEMPO REAL — TICKETS ── */
+/* ══════════════════════════════════════════════
+   AUTH PEOPLE
+══════════════════════════════════════════════ */
+window.loginPeople = async () => {
+  const email = document.getElementById('pp-email').value.trim();
+  const pass  = document.getElementById('pp-pass').value;
+  const errEl = document.getElementById('pp-login-err');
+  const btn   = document.getElementById('pp-btn-login');
+  errEl.style.display = 'none';
+  if (!email || !pass) { errEl.textContent = 'Ingresa correo y contraseña'; errEl.style.display = 'block'; return; }
+
+  btn.disabled = true; btn.textContent = 'Verificando...'; showLoader();
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    const rolDoc = await getDoc(doc(db, 'usuarios', cred.user.uid));
+    const rol = rolDoc.exists() ? rolDoc.data().rol : 'people';
+    if (rol !== 'people' && rol !== 'admin') {
+      await signOut(auth);
+      errEl.textContent = 'No tienes acceso a este panel';
+      errEl.style.display = 'block';
+      return;
+    }
+    mostrarPanelPeople(cred.user.email);
+  } catch(err) {
+    const msgs = {
+      'auth/user-not-found': 'Usuario no encontrado',
+      'auth/wrong-password': 'Contraseña incorrecta',
+      'auth/invalid-email': 'Correo inválido',
+      'auth/too-many-requests': 'Demasiados intentos, espera un momento',
+      'auth/invalid-credential': 'Credenciales incorrectas'
+    };
+    errEl.textContent = msgs[err.code] || 'Error al iniciar sesión';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Ingresar'; hideLoader();
+  }
+};
+
+window.logoutPeople = async () => {
+  if (unsubDotacion) { unsubDotacion(); unsubDotacion = null; }
+  await signOut(auth);
+  document.getElementById('ppl-login').style.display = 'block';
+  document.getElementById('ppl-panel').style.display = 'none';
+  document.getElementById('pp-email').value = '';
+  document.getElementById('pp-pass').value  = '';
+  document.getElementById('hdrUser').innerHTML = '';
+  switchTab('conductor');
+};
+
+function mostrarPanelPeople(email) {
+  document.getElementById('ppl-login').style.display = 'none';
+  document.getElementById('ppl-panel').style.display = 'block';
+  document.getElementById('hdrUser').innerHTML = `<span style="color:var(--green);">●</span> ${email}`;
+  suscribirDotacion();
+}
+
+/* ══════════════════════════════════════════════
+   TIEMPO REAL — TICKETS
+══════════════════════════════════════════════ */
 function suscribirTickets() {
   if (unsubTickets) unsubTickets();
   const q = query(colTickets, orderBy('fechaCreacion', 'desc'));
@@ -692,7 +977,9 @@ function suscribirTickets() {
   }, (err) => { toast('Error cargando tickets: ' + err.message, 'err'); });
 }
 
-/* ── TIEMPO REAL — EPP ── */
+/* ══════════════════════════════════════════════
+   TIEMPO REAL — EPP
+══════════════════════════════════════════════ */
 function suscribirEPP() {
   if (unsubEPP) unsubEPP();
   const q = query(colEPP, orderBy('fechaCreacion', 'desc'));
@@ -702,6 +989,20 @@ function suscribirEPP() {
     actualizarStatsEPP();
     filtrarEPP();
   }, (err) => { toast('Error cargando EPP: ' + err.message, 'err'); });
+}
+
+/* ══════════════════════════════════════════════
+   TIEMPO REAL — DOTACIÓN
+══════════════════════════════════════════════ */
+function suscribirDotacion() {
+  if (unsubDotacion) unsubDotacion();
+  const q = query(colDotacion, orderBy('fechaCreacion', 'desc'));
+  unsubDotacion = onSnapshot(q, (snap) => {
+    todosDotacion = [];
+    snap.forEach(d => todosDotacion.push({ id: d.id, ...d.data() }));
+    actualizarStatsDotacion();
+    filtrarDotacion();
+  }, (err) => { toast('Error cargando dotación: ' + err.message, 'err'); });
 }
 
 /* ── STATS ── */
@@ -719,6 +1020,12 @@ function actualizarStatsEPP() {
   document.getElementById('st-ep-hoy').textContent   = hoy;
 }
 
+function actualizarStatsDotacion() {
+  const hoy = todosDotacion.filter(r => r.fecha === fechaHoy()).length;
+  document.getElementById('st-pp-total').textContent = todosDotacion.length;
+  document.getElementById('st-pp-hoy').textContent   = hoy;
+}
+
 /* ── HELPERS FECHA ── */
 function parseFecha(f) {
   if (!f) return null;
@@ -734,12 +1041,13 @@ function tiempoTranscurrido(a, b) {
   return `${Math.floor(diff/3600000)}h ${Math.floor((diff%3600000)/60000)}m`;
 }
 
-/* ── FILTROS ── */
-// *** CORRECCIÓN: guarda la lista filtrada y NO resetea página en cambiarPag ***
+/* ══════════════════════════════════════════════
+   FILTROS
+══════════════════════════════════════════════ */
 window.filtrarTickets = () => {
   const q      = (document.getElementById('fl-buscar')?.value || '').trim().toLowerCase();
   const estado = document.getElementById('fl-filtro-estado')?.value || 'todos';
-  paginaTickets = 1;  // solo se resetea cuando el usuario cambia un filtro
+  paginaTickets = 1;
   let lista = todosTickets;
   if (estado !== 'todos') lista = lista.filter(t => t.estado === estado);
   if (q) lista = lista.filter(t => (t.nombre||'').toLowerCase().includes(q) || (t.placa||'').toLowerCase().includes(q));
@@ -749,14 +1057,25 @@ window.filtrarTickets = () => {
 
 window.filtrarEPP = () => {
   const q = (document.getElementById('ep-buscar')?.value || '').trim().toLowerCase();
-  paginaEPP = 1;  // solo se resetea cuando el usuario cambia el filtro
+  paginaEPP = 1;
   let lista = todosEPP.filter(r => r.area.toLowerCase() === subTab);
   if (q) lista = lista.filter(r => (r.nombre||'').toLowerCase().includes(q));
   listaFiltradaEPP = lista;
   renderEPP(listaFiltradaEPP);
 };
 
-/* ── PAGINACIÓN ── */
+window.filtrarDotacion = () => {
+  const q = (document.getElementById('pp-buscar')?.value || '').trim().toLowerCase();
+  paginaDotacion = 1;
+  let lista = [...todosDotacion];
+  if (q) lista = lista.filter(r => (r.nombre||'').toLowerCase().includes(q));
+  listaFiltradaDotacion = lista;
+  renderDotacion(listaFiltradaDotacion);
+};
+
+/* ══════════════════════════════════════════════
+   PAGINACIÓN
+══════════════════════════════════════════════ */
 function paginar(lista, pagina) {
   const total  = Math.ceil(lista.length / POR_PAGINA);
   const inicio = (pagina - 1) * POR_PAGINA;
@@ -779,8 +1098,6 @@ function renderPaginacion(contenedorId, total, actual, onCambio) {
   el.innerHTML = html;
 }
 
-// *** CORRECCIÓN PRINCIPAL: cambiarPag* ya NO llaman a filtrar* (que reseteaban la página a 1) ***
-// En su lugar llaman directamente a render* con la lista filtrada guardada
 window.cambiarPagTickets = (p) => {
   paginaTickets = p;
   renderTickets(listaFiltradaTickets);
@@ -793,7 +1110,15 @@ window.cambiarPagEPP = (p) => {
   window.scrollTo({ top: 200, behavior: 'smooth' });
 };
 
-/* ── RENDER TICKETS ── */
+window.cambiarPagDotacion = (p) => {
+  paginaDotacion = p;
+  renderDotacion(listaFiltradaDotacion);
+  window.scrollTo({ top: 200, behavior: 'smooth' });
+};
+
+/* ══════════════════════════════════════════════
+   RENDER TICKETS
+══════════════════════════════════════════════ */
 function renderTickets(listaFiltrada) {
   const isMobile = window.innerWidth < 768;
   document.getElementById('fl-tbl-wrap').style.display = isMobile ? 'none' : 'block';
@@ -854,7 +1179,9 @@ function renderTickets(listaFiltrada) {
   });
 }
 
-/* ── RENDER EPP ── */
+/* ══════════════════════════════════════════════
+   RENDER EPP
+══════════════════════════════════════════════ */
 function renderEPP(listaFiltrada) {
   actualizarStatsEPP();
   const isMobile = window.innerWidth < 768;
@@ -901,7 +1228,62 @@ function renderEPP(listaFiltrada) {
   });
 }
 
-/* ── ENVIAR TICKET (CONDUCTOR) ── */
+/* ══════════════════════════════════════════════
+   RENDER DOTACIÓN
+══════════════════════════════════════════════ */
+function renderDotacion(listaFiltrada) {
+  actualizarStatsDotacion();
+  const isMobile = window.innerWidth < 768;
+  document.getElementById('pp-tbl-wrap').style.display = isMobile ? 'none' : 'block';
+  const tbody = document.getElementById('pp-tbody');
+  const cards = document.getElementById('pp-cards');
+  tbody.innerHTML = ''; cards.innerHTML = '';
+
+  if (listaFiltrada.length === 0) {
+    cards.innerHTML = `<div style="text-align:center;color:var(--gray);padding:2.5rem;background:var(--dark2);border-radius:8px;border:1px solid var(--border);">Sin resultados</div>`;
+    document.getElementById('pp-pag').innerHTML = '';
+    return;
+  }
+
+  const { pagina, total } = paginar(listaFiltrada, paginaDotacion);
+  renderPaginacion('pp-pag', total, paginaDotacion, 'cambiarPagDotacion');
+
+  pagina.forEach(r => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${r.fecha||'-'}</td>
+        <td style="font-weight:600;">${r.nombre}</td>
+        <td>${r.cedula||'-'}</td>
+        <td>${r.cargo||'-'}</td>
+        <td>${r.tallaCamisa||'-'}</td>
+        <td>${r.tallaPantalon||'-'}</td>
+        <td>${r.tallaCalzado||'-'}</td>
+        <td style="max-width:160px;font-size:0.78rem;">${r.dotacion||'-'}</td>
+        <td>${r.responsable}</td>
+        <td style="max-width:120px;font-size:0.78rem;">${r.observaciones||'-'}</td>
+        <td><button onclick="eliminarDotacion('${r.id}')" class="btn-sm btn-red" style="font-size:0.75rem;">🗑</button></td>
+      </tr>`;
+
+    cards.innerHTML += `
+      <div class="m-card">
+        <div class="m-card-top">
+          <span class="m-card-id">${r.nombre}</span>
+        </div>
+        <div class="m-row"><strong>Fecha:</strong> ${r.fecha}</div>
+        <div class="m-row"><strong>Cédula:</strong> ${r.cedula||'-'}</div>
+        <div class="m-row"><strong>Cargo:</strong> ${r.cargo||'-'}</div>
+        <div class="m-row"><strong>T. Camisa:</strong> ${r.tallaCamisa||'-'} &nbsp;|&nbsp; <strong>T. Pantalón:</strong> ${r.tallaPantalon||'-'} &nbsp;|&nbsp; <strong>Calzado:</strong> ${r.tallaCalzado||'-'}</div>
+        <div class="m-row"><strong>Dotación:</strong> ${r.dotacion||'-'}</div>
+        <div class="m-row"><strong>Responsable:</strong> ${r.responsable}</div>
+        ${r.observaciones ? `<div class="m-row" style="margin-bottom:0.5rem;"><strong>Obs.:</strong> ${r.observaciones}</div>` : ''}
+        <button onclick="eliminarDotacion('${r.id}')" class="btn-sm btn-red" style="width:100%;padding:0.5rem;">🗑 Eliminar</button>
+      </div>`;
+  });
+}
+
+/* ══════════════════════════════════════════════
+   ENVIAR TICKET (CONDUCTOR)
+══════════════════════════════════════════════ */
 window.enviarTicket = async () => {
   const placa   = document.getElementById('c-placa').value.trim();
   const nombre  = document.getElementById('c-nombre').value.trim();
@@ -937,7 +1319,9 @@ window.enviarTicket = async () => {
   }
 };
 
-/* ── ENVIAR EPP ── */
+/* ══════════════════════════════════════════════
+   ENVIAR EPP
+══════════════════════════════════════════════ */
 window.enviarEPP = async () => {
   const nombre      = document.getElementById('ep-nombre').value.trim();
   const cargo       = document.getElementById('ep-cargo').value;
@@ -977,7 +1361,61 @@ window.enviarEPP = async () => {
   }
 };
 
-/* ── ACCIONES TICKETS ── */
+/* ══════════════════════════════════════════════
+   ENVIAR DOTACIÓN
+══════════════════════════════════════════════ */
+window.enviarDotacion = async () => {
+  const nombre        = document.getElementById('pp-nombre').value.trim();
+  const cedula        = document.getElementById('pp-cedula').value.trim();
+  const cargo         = document.getElementById('pp-cargo').value;
+  const tallaCamisa   = document.getElementById('pp-talla-camisa').value;
+  const tallaPantalon = document.getElementById('pp-talla-pantalon').value;
+  const tallaCalzado  = document.getElementById('pp-talla-calzado').value;
+  const responsable   = document.getElementById('pp-responsable').value;
+  const observaciones = document.getElementById('pp-obs').value.trim();
+  const fecha         = document.getElementById('pp-fecha').value;
+
+  const dotSeleccionada = [...document.querySelectorAll('.pp-dot-check:checked')].map(c => c.value);
+  const dotacion = dotSeleccionada.join(', ');
+
+  if (!nombre)                      { toast('Ingresa el nombre del colaborador', 'err'); return; }
+  if (!cedula)                      { toast('Ingresa la cédula del colaborador', 'err'); return; }
+  if (!cargo)                       { toast('Selecciona el cargo', 'err'); return; }
+  if (dotSeleccionada.length === 0) { toast('Selecciona al menos un ítem de dotación', 'err'); return; }
+  if (!responsable)                 { toast('Selecciona el responsable', 'err'); return; }
+
+  const btn = document.getElementById('pp-btn-enviar');
+  btn.disabled = true; btn.textContent = 'Guardando...'; showLoader();
+
+  try {
+    await addDoc(colDotacion, {
+      nombre, cedula, cargo, tallaCamisa, tallaPantalon, tallaCalzado,
+      dotacion, responsable, observaciones, fecha,
+      fechaCreacion: Timestamp.now()
+    });
+    document.getElementById('pp-nombre').value        = '';
+    document.getElementById('pp-cedula').value         = '';
+    document.getElementById('pp-cargo').value          = '';
+    document.getElementById('pp-talla-camisa').value   = '';
+    document.getElementById('pp-talla-pantalon').value = '';
+    document.getElementById('pp-talla-calzado').value  = '';
+    document.getElementById('pp-responsable').value    = '';
+    document.getElementById('pp-obs').value            = '';
+    document.getElementById('pp-fecha').value          = fechaHoy();
+    document.querySelectorAll('.pp-dot-check').forEach(c => c.checked = false);
+    clearFoto('pp');
+    toast('✅ Registro de dotación guardado', 'ok');
+  } catch(err) {
+    if (!navigator.onLine) toast('Sin conexión — se guardará cuando vuelva la señal', 'inf');
+    else toast('Error al registrar: ' + err.message, 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Registrar Entrega Dotación'; hideLoader();
+  }
+};
+
+/* ══════════════════════════════════════════════
+   ACCIONES TICKETS
+══════════════════════════════════════════════ */
 window.guardarObs = async (id, obs) => {
   try {
     await updateDoc(doc(db, 'tickets', id), { observaciones: obs });
@@ -1008,12 +1446,22 @@ window.eliminarEPP = async (id) => {
   } catch { toast('Error al eliminar', 'err'); }
 };
 
-/* ── VER FOTO ── */
+window.eliminarDotacion = async (id) => {
+  if (!confirm('¿Eliminar este registro de dotación?')) return;
+  try {
+    await deleteDoc(doc(db, 'dotacion_registros', id));
+    toast('Registro eliminado', 'ok');
+  } catch { toast('Error al eliminar', 'err'); }
+};
+
+/* ══════════════════════════════════════════════
+   VER FOTO
+══════════════════════════════════════════════ */
 window.verFoto = async (id, tipo) => {
   showLoader();
   try {
-    const nombre = tipo === 'ticket' ? 'tickets' : 'epp_registros';
-    const snap   = await getDoc(doc(db, nombre, id));
+    const colName = tipo === 'ticket' ? 'tickets' : tipo === 'epp' ? 'epp_registros' : 'dotacion_registros';
+    const snap   = await getDoc(doc(db, colName, id));
     const foto   = snap.exists() ? snap.data().foto : null;
     if (!foto) { toast('Sin foto disponible', 'err'); return; }
     const m = document.createElement('div');
@@ -1024,7 +1472,9 @@ window.verFoto = async (id, tipo) => {
   finally { hideLoader(); }
 };
 
-/* ── EXPORTAR EXCEL ── */
+/* ══════════════════════════════════════════════
+   EXPORTAR EXCEL
+══════════════════════════════════════════════ */
 window.exportarFlota = async () => {
   showLoader();
   try {
@@ -1070,6 +1520,38 @@ window.exportarSeguridad = async () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'EPP');
     XLSX.writeFile(wb, `seguridad_epp_${fechaHoy()}.xlsx`);
+    toast('Excel descargado ✓', 'ok');
+  } catch(err) { toast('Error al exportar: ' + err.message, 'err'); }
+  finally { hideLoader(); }
+};
+
+window.exportarPeople = async () => {
+  showLoader();
+  try {
+    const snap = await getDocs(query(colDotacion, orderBy('fechaCreacion', 'desc')));
+    if (snap.empty) { toast('No hay registros de dotación', 'err'); return; }
+    const data = [];
+    snap.forEach(d => {
+      const r = d.data();
+      data.push({
+        'Fecha': r.fecha,
+        'Colaborador': r.nombre,
+        'Cédula': r.cedula||'',
+        'Cargo': r.cargo||'',
+        'Talla Camisa': r.tallaCamisa||'',
+        'Talla Pantalón': r.tallaPantalon||'',
+        'Talla Calzado': r.tallaCalzado||'',
+        'Dotación Entregada': r.dotacion||'',
+        'Responsable': r.responsable,
+        'Observaciones': r.observaciones||'',
+        'Registro': fmt(r.fechaCreacion)
+      });
+    });
+    const ws = XLSX.utils.json_to_sheet(data);
+    ws['!cols'] = [{wch:12},{wch:25},{wch:14},{wch:20},{wch:12},{wch:14},{wch:12},{wch:35},{wch:25},{wch:30},{wch:18}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Dotación People');
+    XLSX.writeFile(wb, `people_dotacion_${fechaHoy()}.xlsx`);
     toast('Excel descargado ✓', 'ok');
   } catch(err) { toast('Error al exportar: ' + err.message, 'err'); }
   finally { hideLoader(); }
