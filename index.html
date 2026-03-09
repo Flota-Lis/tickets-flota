@@ -5,7 +5,6 @@
   <title>Lis· CEDI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#1C2030">
-  <link rel="manifest" href="data:application/json,{}">
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;900&family=Barlow+Condensed:wght@600;700;900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
@@ -632,8 +631,7 @@ const auth = getAuth(app);
 
 const colTickets    = collection(db, "tickets");
 const colEPP        = collection(db, "epp_registros");
-const colDotacion   = collection(db, "dotacion_registros");  // ← NUEVA colección
-const colUsuarios   = collection(db, "usuarios");
+const colDotacion   = collection(db, "dotacion_registros");
 
 /* ── CONFIGURACIÓN ── */
 const POR_PAGINA = 15;
@@ -806,14 +804,6 @@ window.loginFlota = async () => {
   btn.disabled = true; btn.textContent = 'Verificando...'; showLoader();
   try {
     const cred = await signInWithEmailAndPassword(auth, email, pass);
-    const rolDoc = await getDoc(doc(db, 'usuarios', cred.user.uid));
-    const rol = rolDoc.exists() ? rolDoc.data().rol : 'flota';
-    if (rol !== 'flota' && rol !== 'admin') {
-      await signOut(auth);
-      errEl.textContent = 'No tienes acceso a este panel';
-      errEl.style.display = 'block';
-      return;
-    }
     mostrarPanelFlota(cred.user.email);
   } catch(err) {
     const msgs = {
@@ -823,7 +813,7 @@ window.loginFlota = async () => {
       'auth/too-many-requests': 'Demasiados intentos, espera un momento',
       'auth/invalid-credential': 'Credenciales incorrectas'
     };
-    errEl.textContent = msgs[err.code] || 'Error al iniciar sesión';
+    errEl.textContent = msgs[err.code] || ('Error: ' + err.message);
     errEl.style.display = 'block';
   } finally {
     btn.disabled = false; btn.textContent = 'Ingresar'; hideLoader();
@@ -862,14 +852,6 @@ window.loginSeguridad = async () => {
   btn.disabled = true; btn.textContent = 'Verificando...'; showLoader();
   try {
     const cred = await signInWithEmailAndPassword(auth, email, pass);
-    const rolDoc = await getDoc(doc(db, 'usuarios', cred.user.uid));
-    const rol = rolDoc.exists() ? rolDoc.data().rol : 'seguridad';
-    if (rol !== 'seguridad' && rol !== 'admin') {
-      await signOut(auth);
-      errEl.textContent = 'No tienes acceso a este panel';
-      errEl.style.display = 'block';
-      return;
-    }
     mostrarPanelSeguridad(cred.user.email);
   } catch(err) {
     const msgs = {
@@ -879,7 +861,7 @@ window.loginSeguridad = async () => {
       'auth/too-many-requests': 'Demasiados intentos, espera un momento',
       'auth/invalid-credential': 'Credenciales incorrectas'
     };
-    errEl.textContent = msgs[err.code] || 'Error al iniciar sesión';
+    errEl.textContent = msgs[err.code] || ('Error: ' + err.message);
     errEl.style.display = 'block';
   } finally {
     btn.disabled = false; btn.textContent = 'Ingresar'; hideLoader();
@@ -919,14 +901,6 @@ window.loginPeople = async () => {
   btn.disabled = true; btn.textContent = 'Verificando...'; showLoader();
   try {
     const cred = await signInWithEmailAndPassword(auth, email, pass);
-    const rolDoc = await getDoc(doc(db, 'usuarios', cred.user.uid));
-    const rol = rolDoc.exists() ? rolDoc.data().rol : 'people';
-    if (rol !== 'people' && rol !== 'admin') {
-      await signOut(auth);
-      errEl.textContent = 'No tienes acceso a este panel';
-      errEl.style.display = 'block';
-      return;
-    }
     mostrarPanelPeople(cred.user.email);
   } catch(err) {
     const msgs = {
@@ -936,7 +910,7 @@ window.loginPeople = async () => {
       'auth/too-many-requests': 'Demasiados intentos, espera un momento',
       'auth/invalid-credential': 'Credenciales incorrectas'
     };
-    errEl.textContent = msgs[err.code] || 'Error al iniciar sesión';
+    errEl.textContent = msgs[err.code] || ('Error: ' + err.message);
     errEl.style.display = 'block';
   } finally {
     btn.disabled = false; btn.textContent = 'Ingresar'; hideLoader();
@@ -1403,7 +1377,6 @@ window.enviarDotacion = async () => {
     document.getElementById('pp-obs').value            = '';
     document.getElementById('pp-fecha').value          = fechaHoy();
     document.querySelectorAll('.pp-dot-check').forEach(c => c.checked = false);
-    clearFoto('pp');
     toast('✅ Registro de dotación guardado', 'ok');
   } catch(err) {
     if (!navigator.onLine) toast('Sin conexión — se guardará cuando vuelva la señal', 'inf');
